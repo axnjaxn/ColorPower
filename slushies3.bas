@@ -125,13 +125,14 @@ Do
 Do
 Getkey->G
 LpWhile G=0
-LpWhile G!=47 And G!=79 And G!=69 And G!=59 And G!=49 And G!=39 And G!=29
+LpWhile G!=47 And G!=79 And G!=69 And G!=59 And G!=49 And G!=39 And G!=29 And G!=78
 G=79=>Goto 1
 G=69=>Goto 2
 G=59=>Goto 3
 G=49=>Goto 4
 G=39=>Goto 5
 G=29=>Goto 6
+G=78=>Goto 8
 ClrText
 Cls
 Stop
@@ -574,6 +575,19 @@ Getkey->G
 LpWhile G!=47 And G!=31
 LpWhile G!=47
 Goto 0
+Lbl 8
+ClrText
+Locate 1,1,"4^3"
+64->Z
+Locate 20,2,Z
+Locate 1,3,"Ans/8"
+Z/8->Z
+Locate 21,4,Z
+Locate 1,5,"Ans*pi"
+Z*pi->Z
+Locate 11,6,Z
+Do:LpWhile Getkey!=31
+Goto th
 '---------------------
 ' != substituted for not equal
 ' -> and => substituted for single and double arrow

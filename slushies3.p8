@@ -169,6 +169,18 @@ function savegame()
    dset(7, stats.p)
 end
 
+function loadgame()
+   return {
+      m=num2bn(dget(1)),
+      s=dget(2),
+      h=dget(3),
+      c=dget(4),
+      d=dget(5),
+      k=dget(6),
+      p=dget(7)
+   }
+end
+
 -->8
 --main game implementation
 ::mainlogo::
@@ -224,14 +236,17 @@ if sel==1 then
    print("have one year to fix things")
    print("before they go south again.")
    pause()
-   dset(0,1)
-   dset(1,100)
-   dset(2,0)
-   dset(3,100)
-   dset(4,10)
-   dset(5,1)
-   dset(6,0)
-   dset(7,0.50)
+
+   stats = {
+      m = 100,
+      s = 0,
+      h = 100,
+      c = 10,
+      d = 1,
+      k = 0,
+      p = 0.50
+   }
+   savegame()
 elseif sel==#m then
    clear()
    print("slushies 3 pico-8 port")
@@ -244,15 +259,7 @@ elseif sel==#m then
    goto mainmenu
 end
 
-stats={
-   m=dget(1),
-   s=dget(2),
-   h=dget(3),
-   c=dget(4),
-   d=dget(5),
-   k=dget(6),
-   p=dget(7)
-}
+stats = loadgame()
 
 ::status::
 savegame()

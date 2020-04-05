@@ -1,6 +1,7 @@
 pico-8 cartridge // http://www.pico-8.com
 version 18
 __lua__
+--common
 cartdata("axnjaxn_slushies3")
 
 function clear()
@@ -168,6 +169,8 @@ function savegame()
    dset(7, stats.p)
 end
 
+-->8
+--main game implementation
 ::mainlogo::
 clear()
 for i=0,12 do spr(6,24+6*i,0) end
@@ -337,9 +340,8 @@ elseif sel == 5 then goto courtmenu
 elseif sel == 6 then goto endmenu
 end
 
---todo: improve this
+--teacher screen
 clear()
---print("4^3", 1, 1)
 spr(32, 1, 1, 3, 1)
 spr(35, 19*6+1, 9, 2, 1)
 spr(37, 1, 17, 3, 1)

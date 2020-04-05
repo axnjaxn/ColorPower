@@ -409,7 +409,7 @@ Z<250=>250->Z
 If M<Z Or D>365
 Then If M<Z
 Then Locate 1,1,"YOU DON'T HAVE THE"
-Locate 1,2,"MONEY FOR ATTORNEY"
+Locate 1,2,"MONEY FOR AN ATTORNEY"
 Else Locate 1,1,"IT'S TOO LATE"
 IfEnd
 Do:LpWhile Getkey!=31

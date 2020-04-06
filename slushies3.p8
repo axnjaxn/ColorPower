@@ -171,7 +171,7 @@ end
 
 function loadgame()
    return {
-      m=num2bn(dget(1)),
+      m=dget(1),
       s=dget(2),
       h=dget(3),
       c=dget(4),
@@ -384,8 +384,6 @@ elseif sel == 4 then
 else
    goto status
 end
-
---numbermenu(false)--delete
 
 ::fightmenu::
 clear()

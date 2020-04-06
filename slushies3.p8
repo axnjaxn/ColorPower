@@ -136,6 +136,14 @@ function numbermenu(is_int, dx, dy, x, y)
             if (#s == 0) return nil
             return tonum(s)
          end
+
+         if #s > 4 then
+            s = sub(s, 1, 4) --cap at four-character strings
+            print(s, dx, dy, 1)
+            wait(2)
+            print(s, dx, dy, 8)
+            flip()
+         end
       end
    end
 end

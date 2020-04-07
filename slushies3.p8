@@ -277,29 +277,35 @@ function date2str(d)
    return tostr(d)
 end
 
-function test(b, name)
-   if (b) return nil
+function test(a, b, name)
+   if (a == b) return nil
    clear()
-   print("failed test:")
-   print(name)
+   print("failed test " .. name)
+   print("expected " .. b)
+   print("got " .. a)
    while true do end
 end
 
 a=bncreate(257)
-test(bnextract(a) == 257, "a")
+test(bnextract(a), 257, "a")
 b=bnmul(a, 39)
-test(bn2str(b) == "10023", "b")
+test(bn2str(b), "10023", "b")
 c=bnadd(b, 300)
-test(bn2str(c) == "10323", "c")
+test(bn2str(c), "10323", "c")
 d=bndiv(c, 14)
-test(bn2str(d) == "737", "d")
-test(bnextract(d) == 737, "d2")
-test(bn2str(bndecode(bnencode(d))) == "737", "d3")
+test(bn2str(d), "737", "d")
+test(bnextract(d), 737, "d2")
+test(bn2str(bndecode(bnencode(d))), "737", "d3")
 goto skip_true_bignums
 e = bnmul(d, 737)
 f = bnsub(bnadd(bnbnsub(bnbnadd(d, e), a), 100), 297)
-test(bn2str(f) == "543452", "f")
-test(bn2str(bnshr(f, 3)) == "67931", "g")
+test(bn2str(f), "543452", "f")
+g = bnshr(f, 3)
+test(bn2str(g), "67931", "g")
+h = bndiv(h, 50)
+test(bn2str(h), "1358", "h")
+i = bnmul(bnbnsub(h, bncreate(2467)), 3)
+test(bn2str(i), "-3327", "i")
 ::skip_true_bignums::
 
 -->8

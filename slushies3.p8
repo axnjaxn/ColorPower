@@ -277,19 +277,30 @@ function date2str(d)
    return tostr(d)
 end
 
-a=bncreate(257)
-b=bnmul(a, 39)
-if (bn2str(b) != "10023") goto deadloop
-c=bnadd(b, 300)
-if (bn2str(c) != "10323") goto deadloop
-d=bndiv(c, 14)
-if (bn2str(d) != "737") goto deadloop
-if (bnencode(d) != 737) goto deadloop
-if (bn2str(bndecode(737)) != "737") goto deadloop
+function test(b, name)
+   if (b) return nil
+   clear()
+   print("failed test:")
+   print(name)
+   while true do end
+end
 
-goto ok
-::deadloop:: goto deadloop
-::ok::
+a=bncreate(257)
+test(bnextract(a) == 257, "a")
+b=bnmul(a, 39)
+test(bn2str(b) == "10023", "b")
+c=bnadd(b, 300)
+test(bn2str(c) == "10323", "c")
+d=bndiv(c, 14)
+test(bn2str(d) == "737", "d")
+test(bnextract(d) == 737, "d2")
+test(bn2str(bndecode(bnencode(d))) == "737", "d3")
+goto skip_true_bignums
+e = bnmul(d, 737)
+f = bnsub(bnadd(bnbnsub(bnbnadd(d, e), a), 100), 297)
+test(bn2str(f) == "543452", "f")
+test(bn2str(bnshr(f, 3)) == "67931", "g")
+::skip_true_bignums::
 
 -->8
 --main game implementation

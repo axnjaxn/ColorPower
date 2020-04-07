@@ -4,6 +4,8 @@ __lua__
 --common
 cartdata("axnjaxn_slushies3")
 
+--todo: back button everywhere
+
 function clear()
    camera(0,-32)
    cls()
@@ -168,10 +170,10 @@ end
 
 function savegame()
    dset(0, 1)
-   dset(1, stats.m)
-   dset(2, stats.s)
+   dset(1, bnencode(stats.m))
+   dset(2, bnencode(stats.s))
    dset(3, stats.h)
-   dset(4, stats.c)
+   dset(4, bnencode(stats.c))
    dset(5, stats.d)
    dset(6, stats.k)
    dset(7, stats.p)
@@ -179,15 +181,115 @@ end
 
 function loadgame()
    return {
-      m=dget(1),
-      s=dget(2),
+      m=bndecode(dget(1)),
+      s=bndecode(dget(2)),
       h=dget(3),
-      c=dget(4),
+      c=bndecode(dget(4)),
       d=dget(5),
       k=dget(6),
       p=dget(7)
    }
 end
+
+-->8
+--bignum
+
+--[[
+   things that need to be bn:
+   money (with additional tostr rules)
+   customers
+   slushies
+
+   things that don't need to be bn but do need special rules:
+   price
+
+   0xffff.ffff
+   {b4, b3, b2, b1, neg}
+]]--
+
+function bncreate(num)
+   return {num}
+end
+
+--warning: only works properly if bn < 32767
+function bnextract(bn)
+   return bn[1]
+end
+
+function bnencode(bn)
+   return bn[1]
+end
+
+function bndecode(num)
+   return {num}
+end
+
+--todo: money representation
+function bn2str(bn, ismoney)
+   return tostr(bn[1])
+end
+
+function bnadd(bn, num)
+   return {bn[1] + num}
+end
+
+function bnsub(bn, num)
+   return {bn[1] - num}
+end
+
+function bnbnadd(bn1, bn2)
+   return {bn1[1] + bn2[1]}
+end
+
+function bnbnsub(bn1, bn2)
+   return {bn1[1] - bn2[1]}
+end
+
+function bnmul(bn, num)
+   return {bn[1] * num}
+end
+
+--todo approximate division?
+function bndiv(bn, num)
+   return {flr(bn[1] / num)}
+end
+
+function bnisneg(bn)
+   return bn[1] < 0
+end
+
+function bnshr(bn, num)
+   return {flr(shr(bn[1], num))}
+end
+
+function bnrnd(bn)
+   return {flr(rnd() * bn[1])}
+end
+
+--not really a bn but whatever
+function dateadd(d, x)
+   if (d == 0x7fff) return 0x7fff
+   return d+x
+end
+
+function date2str(d)
+   if (d == 0x7fff) return "1000000+"
+   return tostr(d)
+end
+
+a=bncreate(257)
+b=bnmul(a, 39)
+if (bn2str(b) != "10023") goto deadloop
+c=bnadd(b, 300)
+if (bn2str(c) != "10323") goto deadloop
+d=bndiv(c, 14)
+if (bn2str(d) != "737") goto deadloop
+if (bnencode(d) != 737) goto deadloop
+if (bn2str(bndecode(737)) != "737") goto deadloop
+
+goto ok
+::deadloop:: goto deadloop
+::ok::
 
 -->8
 --main game implementation
@@ -246,10 +348,10 @@ if sel==1 then
    pause()
 
    stats = {
-      m = 100,
-      s = 0,
+      m = bncreate(100),
+      s = bncreate(0),
       h = 100,
-      c = 10,
+      c = bncreate(10),
       d = 1,
       k = 0,
       p = 0.50
@@ -300,11 +402,11 @@ print("customers",3,33)
 print("day",3,39)
 print("price",3,45)
 color(8)
-print(stats.m,45,15)
-print(stats.s,45,21)
+print(bn2str(stats.m, true),45,15)
+print(bn2str(stats.s),45,21)
 print(stats.h,45,27)
-print(stats.c,45,33)
-print(stats.d,45,39)
+print(bn2str(stats.c),45,33)
+print(date2str(stats.d),45,39)
 print(stats.p,45,45)
 
 m = {
@@ -452,14 +554,21 @@ print("how many boxes?")
 print("(0 = full)")
 y = numbermenu(true, 1, 25)
 if (y == nil) goto status
-if (y == 0) y = flr(stats.m / z)
-if stats.m < y * z then
+
+if y == 0 then
+   y = bndiv(stats.m, z)
+else
+   y = bncreate(y)
+end
+
+z = bnbnsub(stats.m, bnmul(y, z))
+if bnisneg(z) then
    clear()
    print("not enough")
    pause()
 else
-   stats.m -= y * z
-   stats.s += 50 * y
+   stats.m = z
+   stats.s = bnbnadd(stats.s, bnmul(y, 50))
 end
 goto status
 
@@ -475,8 +584,8 @@ if z > 5 then
    print("adjusted price")
    pause()
 end
-stats.c -= y
-if (stats.c < 0) stats.c = 0
+stats.c = bnsub(stats.c, y)
+if (bnisneg(stats.c)) stats.c = bncreate(0)
 stats.p = z
 goto status
 
@@ -485,26 +594,26 @@ clear()
 print("stealing...")
 wait(60)
 y = flr(3 * rnd())
-stats.d += 1
+stats.d = dateadd(stats.d, 1)
 if y == 0 then
    print("success!")
    z = 5 * flr(10 * rnd()) + 5
    wait(30)
    print("stole " .. z .. " slushies")
-   stats.s += z
+   stats.s = bnadd(stats.s, z)
 elseif y == 1 then
    print("success!")
    print("but the slushies were")
    print("contaminated and")
    print("some customers left")
-   stats.c -= flr(9 * rnd())
-   if (stats.c < 0) stats.c = 0
+   stats.c = bnsub(stats.c, flr(9 * rnd()))
+   if (bnisneg(stats.c)) stats.c = bncreate(0)
 else
    print("you were caught,")
    print("paid a fine, and spent")
    print("two weeks in jail")
-   stats.m -= 200
-   stats.d += 14
+   stats.m = bnsub(stats.m, 200)
+   stats.d = dateadd(stats.d, 14)
    stats.h = 50
 end
 pause()
@@ -524,9 +633,14 @@ else
    z = 100
 end
 if (z > 100 - stats.h) z = (100 - stats.h)
-if (z > stats.s) z = stats.s
-stats.s -= z
-stats.h += z
+y = bnsub(stats.s, z)
+if bnisneg(y) then
+   stats.s = bncreate(0)
+   stats.h += bnextract(stats.s)
+else
+   stats.s = y
+   stats.h += z
+end
 goto status
 
 ::dojoscreen::
@@ -542,15 +656,15 @@ else
    for z=1,y do
       loadscr()
       cursor(1,13)
-      print("day " .. stats.d + z)
+      print("day " .. date2str(dateadd(stats.d, z)))
       wait(2)
    end
    print("level up!")
-   stats.d += y
+   stats.d = dateadd(stats.d, y)
    stats.k += 1
    stats.h -= 45
-   stats.c -= 1
-   if (stats.c < 0) stats.c = 0
+   stats.c = bnsub(stats.c, 1)
+   if (bnisneg(stats.c)) stats.c = bncreate(0)
    pause()
 end
 goto status
@@ -585,13 +699,13 @@ print(stats.h)
 print(z)
 cursor(1, 25)
 if stats.h < 0 then
-   stats.m -= 250
+   stats.m = bnsub(stats.m, 250)
    stats.h = 10
    print("you lost")
 else
    z = flr(80 * rnd())
    print("money+" .. z)
-   stats.m += z
+   stats.m = bnadd(stats.m, z)
 end
 pause()
 goto status
@@ -600,7 +714,7 @@ goto status
 clear()
 z = 10 - flr(stats.h / 10)
 print("rested " .. z .. " days")
-stats.d += z
+stats.d = dateadd(stats.d, z)
 stats.h = 100
 pause()
 goto status
@@ -618,16 +732,17 @@ print("breakdancing...")
 wait(30)
 print("dj'ing...")
 wait(30)
-z = 0
+z = bncreate(0)
 for x=1,y do
-   z += flr(9 * rnd()) + flr(flr(stats.d / 10) * rnd())
+   z = bnadd(z, flr(9 * rnd()) + flr(flr(stats.d / 10) * rnd()))
    stats.h = flr(stats.h / 2)
 end
-print("met " .. z .. " people")
+print("met " .. bn2str(z) .. " people")
 pause()
-stats.c += z
-stats.d += y
-stats.m -= 10 * y
+stats.c = bnbnadd(stats.c, z)
+stats.d = dateadd(stats.d, y)
+y = bnmul(bncreate(y), 10)
+stats.m = bnbnsub(stats.m, y)
 goto status
 
 ::suescreen::
@@ -655,28 +770,29 @@ cursor(1, 25)
 
 if y > 0 then
    print("you won")
-   stats.m += 10 * z + 50
-   print("new total " .. stats.m)
+   stats.m = bnadd(stats.m, 10 * y + 50)
 else
    print("you lose")
-   stats.m -= 10 * z + 50
-   print("new total " .. stats.m)
+   stats.m = bnsub(stats.m, 10 * z + 50)
 end
+print("new total " .. bn2str(stats.m, true))
 pause()
 goto status
 
 ::claimscreen::
 clear()
-z = flr(stats.d / 2)
-z = 12.5 * z + flr((100 - stats.c) * rnd())
+z = 12.5 * flr(stats.d / 2)
+y = bnadd(bnmul(stats.c, -1), 100)
+if (not bnisneg(y)) z += flr(bnextract(y) * rnd())
 if (z < 250) z = 250
+z = flr(z)
 
-if stats.m < z or stats.d > 365 then
-   if stats.m < z then
+if bnisneg(bnsub(stats.m, z)) or stats.d > 365 then
+   if stats.d > 365 then
+      print("it's too late")
+   else
       print("you don't have the")
       print("money for an attorney")
-   else
-      print("it's too late")
    end
    pause()
    goto status
@@ -685,23 +801,24 @@ print("to hire an attorney")
 print("it will cost " .. z)
 sel = menu({"yes", "no"}, 1, 15)
 
-if (sel == nil) goto status
+if (sel != 1) goto status
 
 clear()
 if flr(10 * rnd()) == 0 then
    print("your attorney failed")
    print("but refunded a little")
-   stats.m -= z / 2
+   stats.m = bnsub(stats.m, flr(z/2))
 else
    print("you won")
-   stats.m -= z
+   stats.m = bnsub(stats.m, z)
    stats.d = flr(stats.d / 2)
 end
 pause()
 goto status
 
 ::endscreen::
-if stats.m >= 50000 and stats.d <= 365 then
+z = bnbnsub(stats.m, bnmul(bncreate(10000), 5))
+if not bnisneg(z) and stats.d <= 365 then
    clear()
    print("2005 ad...")
    print("sim inc. has become the most")
@@ -710,23 +827,23 @@ if stats.m >= 50000 and stats.d <= 365 then
    print("you are its ceo. you are...")
    print("the richest man alive.")
    new_stats = {
-      m=1000000,
-      s=1000,
+      m=bnmul(bncreate(1000), 1000),
+      s=bncreate(1000),
       h=100,
-      c=100,
+      c=bncreate(100),
       d=720,
       k=0,
       p=0.5
    }
    pause()
-   if stats.c >= 100 then
+   if not bnisneg(bnsub(stats.c, 100)) then
       clear()
       print("everyone loves you. you even")
       print("have a fan club and a tv show.")
       print("everyone rushes to buy your")
       print("products and you sell them")
       print("on a global scale.")
-      new_stats.c = 30000 --changed to avoid overflow
+      new_stats.c = bnmul(bncreate(1000), 1000)
       pause()
    end
    if stats.k >= 12 then
@@ -748,12 +865,39 @@ if stats.m >= 50000 and stats.d <= 365 then
    clear()
    print("the end", 50, 30)
    pause()
-   --goto mainlogo
+elseif stats.d > 720 then
+   --weird ending
+   clear()
+   print("the time machine lies")
+   print("unused in your garage. you")
+   print("turn it on and it glows a soft")
+   print("blue. you step in...")
+   print("")
+   print("you step out in the future.")
+   print("your customers are somehow")
+   print("different now, though.")
+   z = bnmul(bncreate(1000), 1000)
+   if bnisneg(bnbnsub(stats.c, z)) then
+      z = bnbnsub(z, stats.c)
+      stats.m = bnbnsub(stats.m, bnmul(z, 5))
+      stats.d = 0x7fff -- modified since this is so frequently out of range
+      stats.c = bnmul(bncreate(1000), 1000)
+   end
+   pause()
 else
-   --todo: bad ending
+   clear()
+   print("2005 ad...")
+   print("you are broke. the work you")
+   print("did in the past was too")
+   print("little, too late. you lose.")
+   --one departure from the original version is:
+   --i don't want to zero all the stats here
+   pause()
 end
---what's that weird ending?
 
+goto mainlogo
+
+::test::
 clear()
 print("this is a test")
 print("i did a bunch of stuff")
@@ -797,11 +941,79 @@ for frame=0,10 do
    print("this is some text commentary")
    flip()
 end
-
 pause()
-
+goto mainlogo
 
 ::runscreen::
+clear()
+y = flr(10 * rnd()) - 5
+if y == 1 then
+   print("some slushies melted")
+   z = bnrnd(bnshr(stats.s, 2))
+   stats.s = bnbnsub(stats.s, z)
+   print("you lost " .. bn2str(z))
+elseif y == 2 then
+   print("some customers got")
+   print("sick of slushies")
+   z = bnrnd(bnshr(stats.c, 2))
+   print("you lost " .. bn2str(z))
+   stats.c = bnbnsub(stats.c, z)
+elseif y == 3 then
+   print("arnold used his")
+   print("california governor")
+   print("influence to hurt the")
+   print("slushie business when")
+   print("he bought one.")
+   if stats.k >= 40 and flr((55 - stats.k) * rnd()) <= 5 then
+      print("he bought one...",1,25)
+      pause()
+      clear()
+      print("but you opened a can")
+      print("of whoopin on his")
+      print("butt and took his")
+      print("wallet.")
+      stats.m = bnbnadd(stats.m, bnmul(bncreate(10), flr(200 * rnd())))
+   else
+      stats.s = bnbnsub(stats.s, bnshr(bnrnd(stats.s), 1))
+      stats.c = bnsub(stats.c, flr(15 * rnd()))
+      if (bnisneg(stats.c)) stats.c = bncreate(0)
+   end
+elseif y == 4 then
+   print("a french german")
+   print("baptist catholic nazi")
+   print("pirate nun slapped")
+   print("you with a ruler.")
+   stats.h -= 5
+   if stats.k >= 12 then
+      print("you with a ruler...", 1, 19)
+      pause()
+      clear()
+      print("but you defended")
+      print("yourself and k.o.'ed")
+      print("her.")
+      stats.h += 5
+      stats.c = bnadd(stats.c, 1)
+   end
+else
+   print("you sold a slushie to")
+   z = bnrnd(stats.c)
+   if (bnisneg(bnbnsub(stats.s, z))) z = stats.s
+   print(bn2str(z))
+   print("customers")
+   stats.m = bnbnadd(stats.m, bnmul(z, stats.p))
+   stats.s = bnbnsub(stats.s, z)
+end
+cursor(1, 31)
+print("slushies=" .. bn2str(stats.s))
+print("day " .. date2str(stats.d))
+--adjusted from original:
+-- it's weird that it automatically sent you to end game
+-- on day 365 if you run, given that you skip it otherwise
+-- (using the days any other way)
+stats.d = dateadd(stats.d, 1)
+sel = menu({"continue", "    back"}, 96, 50)
+if (sel == 1) goto runscreen
+
 goto status
 
 __gfx__

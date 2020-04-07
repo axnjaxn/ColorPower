@@ -208,62 +208,87 @@ end
 ]]--
 
 function bncreate(num)
-   return {num}
+   local neg = false
+   if num < 0 then
+      num = -num
+      neg = true
+   end
+   return {
+      b3=0,
+      b2=0,
+      b1=flr(shr(num, 8)),
+      b0=flr(band(num, 0xff)),
+      neg=neg
+   }
 end
 
 --warning: only works properly if bn < 32767
 function bnextract(bn)
-   return bn[1]
+   num = bn.b0 + shl(bn.b1, 8)
+   if (bn.neg) num = -num
+   return num
 end
 
 function bnencode(bn)
-   return bn[1]
+   --todo
+   return bnextract(bn)
 end
 
 function bndecode(num)
-   return {num}
+   --todo
+   return bncreate(num)
 end
 
 --todo: money representation
 function bn2str(bn, ismoney)
-   return tostr(bn[1])
+   --todo
+   return tostr(bnextract(bn))
 end
 
 function bnadd(bn, num)
-   return {bn[1] + num}
+   --todo
+   return bncreate(bnextract(bn) + num)
 end
 
 function bnsub(bn, num)
-   return {bn[1] - num}
-end
-
-function bnbnadd(bn1, bn2)
-   return {bn1[1] + bn2[1]}
-end
-
-function bnbnsub(bn1, bn2)
-   return {bn1[1] - bn2[1]}
+   --todo
+   return bncreate(bnextract(bn) - num)
 end
 
 function bnmul(bn, num)
-   return {bn[1] * num}
+   --todo
+   return bncreate(bnextract(bn) * num)
 end
 
 --todo approximate division?
-function bndiv(bn, num)
-   return {flr(bn[1] / num)}
+function bndiv(bn, num) --num must be positive
+   --todo
+   return bncreate(flr(bnextract(bn) / num))
+end
+
+function bnbnadd(bn1, bn2)
+   --todo
+   return bncreate(bnextract(bn1) + bnextract(bn2))
+end
+
+function bnbnsub(bn1, bn2)
+   --todo
+   return bncreate(bnextract(bn1) - bnextract(bn2))
 end
 
 function bnisneg(bn)
-   return bn[1] < 0
+   --todo
+   return bnextract(bn) < 0
 end
 
 function bnshr(bn, num)
-   return {flr(shr(bn[1], num))}
+   --todo
+   return bncreate(flr(shr(bnextract(bn), num)))
 end
 
 function bnrnd(bn)
-   return {flr(rnd() * bn[1])}
+   --todo
+   return bncreate(flr(bnextract(bn) * rnd()))
 end
 
 --not really a bn but whatever

@@ -224,19 +224,27 @@ end
 
 --warning: only works properly if bn < 32767
 function bnextract(bn)
-   num = bn.b0 + shl(bn.b1, 8)
+   local num = bn.b0 + shl(bn.b1, 8)
    if (bn.neg) num = -num
    return num
 end
 
 function bnencode(bn)
-   --todo
-   return bnextract(bn)
+   local x = shl(bn.b3, 8) + bn.b2 + shr(bn.b1, 8) + shr(bn.b0, 16)
+   if (bn.neg) x = -x
+   return x
 end
 
 function bndecode(num)
-   --todo
-   return bncreate(num)
+   local neg = (num < 0)
+   if (neg) num = -num
+   return {
+      b3 = flr(shr(num, 8)),
+      b2 = band(num, 0xff),
+      b1 = band(shl(num, 8), 0xff),
+      b0 = band(shl(num, 16), 0xff),
+      neg = neg
+   }
 end
 
 --todo: money representation
@@ -331,7 +339,11 @@ h = bndiv(h, 50)
 test(bn2str(h), "1358", "h")
 i = bnmul(bnbnsub(h, bncreate(2467)), 3)
 test(bn2str(i), "-3327", "i")
+test(bn2str(bndecode(bnencode(i))), "-3327", "i2")
 ::skip_true_bignums::
+j = bncreate(-9000)
+test(bn2str(j), "-9000", "j")
+test(bn2str(bndecode(bnencode(j))), "-9000", "j2")
 
 -->8
 --main game implementation

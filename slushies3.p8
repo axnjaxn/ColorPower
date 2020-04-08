@@ -194,43 +194,24 @@ end
 -->8
 --bignum
 
---[[
-   things that need to be bn:
-   money (with additional tostr rules)
-   customers
-   slushies
-
-   things that don't need to be bn but do need special rules:
-   price
-
-   0xffff.ffff
-   {b4, b3, b2, b1, neg}
-]]--
-
 function bncreate(num)
    local neg = false
    if num < 0 then
       num = -num
       neg = true
    end
-   return {
-      b3=0,
-      b2=0,
-      b1=flr(shr(num, 8)),
-      b0=flr(band(num, 0xff)),
-      neg=neg
-   }
+   return {flr(band(num, 0xff)), flr(shr(num, 8)), 0, 0, neg=neg}
 end
 
 --warning: only works properly if bn < 32767
 function bnextract(bn)
-   local num = bn.b0 + shl(bn.b1, 8)
+   local num = bn[1] + shl(bn[2], 8)
    if (bn.neg) num = -num
    return num
 end
 
 function bnencode(bn)
-   local x = shl(bn.b3, 8) + bn.b2 + shr(bn.b1, 8) + shr(bn.b0, 16)
+   local x = shl(bn[4], 8) + bn[3] + shr(bn[2], 8) + shr(bn[1], 16)
    if (bn.neg) x = -x
    return x
 end
@@ -239,11 +220,11 @@ function bndecode(num)
    local neg = (num < 0)
    if (neg) num = -num
    return {
-      b3 = flr(shr(num, 8)),
-      b2 = band(num, 0xff),
-      b1 = band(shl(num, 8), 0xff),
-      b0 = band(shl(num, 16), 0xff),
-      neg = neg
+      band(shl(num, 16), 0xff),
+      band(shl(num, 8), 0xff),
+      band(num, 0xff),
+      flr(shr(num, 8)),
+      neg=neg
    }
 end
 
@@ -299,20 +280,13 @@ function bnadd(bn, num)
    if ((num < 0) != bn.neg) return bnsub(bn, -num)
 
    local ans = {neg=bn.neg}
-   num = bn.b0 + abs(num) --since we've already confirmed it's the same sign
-   ans.b0 = band(num, 0xff)
-   num = flr(shr(num, 8))
+   num = abs(num) --since we've already confirmed it's the same sign
 
-   num = bn.b1 + num
-   ans.b1 = band(num, 0xff)
-   num = flr(shr(num, 8))
-
-   num = bn.b2 + num
-   ans.b2 = band(num, 0xff)
-   num = flr(shr(num, 8))
-
-   num = bn.b3 + num
-   ans.b3 = band(num, 0xff)
+   for i=1,4 do
+      num = bn[i] + abs(num) 
+      ans[i] = band(num, 0xff)
+      num = flr(shr(num, 8))
+   end
 
    return ans
 end

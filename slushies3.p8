@@ -247,15 +247,74 @@ function bndecode(num)
    }
 end
 
---todo: money representation
+--todo: verify cents
 function bn2str(bn, ismoney)
-   --todo
-   return tostr(bnextract(bn))
+   local neg = bn.neg
+   bn.neg = false --this algorithm will "store" the sign to simplify the logic
+   local x = bnencode(bn) --exploiting the encoding, which is a 32-bit int
+   local y = {0} --this is the "bcd" digits table
+   local k --this will be used to store nibble-to-nibble carries
+
+   --this is the double-dabble algorithm to convert the 32-bit int to bcd
+   for i = 0, 31 do
+      -- add step
+      for j=1,#y do
+         if (y[j] >= 5) y[j] += 3
+      end
+
+      -- shift step
+      k = 0
+      if (band(x, 0x8000) != 0) k = 1
+      x = shl(x, 1)
+      for j=1,#y do
+         y[j] = shl(y[j], 1) + k
+         k = flr(shr(y[j], 4))
+         y[j] = band(y[j], 0x0f)
+      end
+      if (k > 0) add(y, 1) --add digits as necessary
+   end
+
+   local cents = 0
+   if ismoney then
+      cents = y[1]
+      if (#y > 1) cents = 10 * y[2] + cents
+      if #y > 2 then
+         del(y, y[1])
+         del(y, y[1])
+      else
+         y = {0}
+      end
+   end
+
+   bn.neg = neg --restore the sign
+   local s = ""
+   for i=1,#y do s = y[i] .. s end
+   if (neg) s = "-" .. s
+   if (cents > 0) s = s .. "." .. cents
+
+   return s
 end
 
 function bnadd(bn, num)
-   --todo
-   return bncreate(bnextract(bn) + num)
+   if ((num < 0) != bn.neg) return bnsub(bn, -num)
+
+   local ans = {neg=bn.neg}
+   num = bn.b0 + abs(num) --since we've already confirmed it's the same sign
+   ans.b0 = band(num, 0xff)
+   num = flr(shr(num, 8))
+
+   num = bn.b1 + num
+   ans.b1 = band(num, 0xff)
+   num = flr(shr(num, 8))
+
+   num = bn.b2 + num
+   ans.b2 = band(num, 0xff)
+   num = flr(shr(num, 8))
+
+   num = bn.b3 + num
+   ans.b3 = band(num, 0xff)
+
+   return ans
 end
 
 function bnsub(bn, num)
@@ -324,7 +383,10 @@ test(bnextract(a), 257, "a")
 b=bnmul(a, 39)
 test(bn2str(b), "10023", "b")
 c=bnadd(b, 300)
-test(bn2str(c), "10323", "c")
+test(bnextract(c), 10323, "c")
+test(bn2str(c), "10323", "c2")
+test(bnextract(bnsub(c, 10000)), 323, "c3")
+test(bn2str(bnsub(c, 20000)), "-9677", "c4")
 d=bndiv(c, 14)
 test(bn2str(d), "737", "d")
 test(bnextract(d), 737, "d2")

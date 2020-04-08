@@ -203,7 +203,10 @@ function bncreate(num)
    return {flr(band(num, 0xff)), flr(shr(num, 8)), 0, 0, neg=neg}
 end
 
---warning: only works properly if bn < 32767
+function bncanextract(bn)
+   return bn[2] < 0x80 and bn[3] == 0 and bn[4] == 0
+end
+
 function bnextract(bn)
    local num = bn[1] + shl(bn[2], 8)
    if (bn.neg) num = -num
@@ -283,7 +286,7 @@ function bnadd(bn, num)
    num = abs(num) --since we've already confirmed it's the same sign
 
    for i=1,4 do
-      num = bn[i] + abs(num) 
+      num = bn[i] + abs(num)
       ans[i] = band(num, 0xff)
       num = flr(shr(num, 8))
    end
@@ -292,39 +295,143 @@ function bnadd(bn, num)
 end
 
 function bnsub(bn, num)
-   --todo
-   return bncreate(bnextract(bn) - num)
+   if ((num < 0) != bn.neg) return bnadd(bn, -num)
+
+   --this also handles all cases where bn's sign flips
+   if bncanextract(bn) then
+      return bncreate(bnextract(bn) - num)
+   end
+
+   local ans = {neg=bn.neg}
+   num = abs(num) --all sign flipping is already handled
+
+   for i=1,4 do
+      ans[i] = bn[i] - band(num, 0xff)
+      if ans[i] < 0 then
+         ans[i] += 0x100
+         num += 0x100
+      end
+      num = flr(shr(num, 8))
+   end
+
+   return ans
 end
 
 function bnmul(bn, num)
-   --todo
-   return bncreate(bnextract(bn) * num)
+   local neg = bn.neg
+   if (num < 0) neg = not neg
+   num = abs(num)
+
+   local lo, pplo, clo = band(num, 0xff), {neg=neg}, 0
+   local hi, pphi, chi = flr(shr(num, 8)), {neg=neg}, 0
+
+   for i=1,4 do
+      clo = bn[i] * lo + clo
+      pplo[i] = band(clo, 0xff)
+      clo = band(shr(clo, 8), 0xff)
+
+      chi = bn[i] * hi + chi
+      pphi[i + 1] = band(chi, 0xff)
+      chi = band(shr(chi, 8), 0xff)
+   end
+   pphi[5] = nil
+   pphi[1] = 0
+
+   return bnbnadd(pplo, pphi)
 end
 
---todo approximate division?
+--this is used in the code exactly once:
+--it divides by a multiple of 5 between 10 and 50 inclusive
 function bndiv(bn, num) --num must be positive
-   --todo
-   return bncreate(flr(bnextract(bn) / num))
+   local ans={neg=bn.neg}
+   local sum, carry = 0, 0
+
+   for i=4,1,-1 do
+      sum = bn[i] + shl(carry, 8)
+      ans[i] = flr(sum / num)
+      carry = sum % num
+   end
+
+   return ans
+end
+
+function bnbnabsgr(bn1, bn2)
+   for i=4,1,-1 do
+      if (bn1[i] > bn2[i]) return true
+      if (bn1[i] < bn2[i]) return false
+   end
+   return false
 end
 
 function bnbnadd(bn1, bn2)
-   --todo
-   return bncreate(bnextract(bn1) + bnextract(bn2))
+   local ans
+
+   if bn1.neg != bn2.neg then
+      bn2.neg = not bn2.neg
+      ans = bnbnsub(bn1, bn2)
+      bn2.neg = not bn2.neg
+      return ans
+   end
+
+   ans = {neg=bn1.neg}
+   local num = 0
+
+   for i=1,4 do
+      num = bn1[i] + bn2[i] + num
+      ans[i] = band(num, 0xff)
+      num = flr(shr(num, 8))
+   end
+
+   return ans
 end
 
 function bnbnsub(bn1, bn2)
-   --todo
-   return bncreate(bnextract(bn1) - bnextract(bn2))
+   local ans
+
+   if bn1.neg != bn2.neg then
+      bn2.neg = not bn2.neg
+      ans = bnbnadd(bn1, bn2)
+      bn2.neg = not b2.neg
+      return ans
+   end
+
+   ans = {neg = bn1.neg}
+
+   --avoid flips of sign later in the function
+   if bnbnabsgr(bn2, bn1) then
+      bn1, bn2 = bn2, bn1
+      ans.neg = not ans.neg
+   end
+
+   local borrow = 0
+
+   for i=1,4 do
+      ans[i] = bn1[i] - bn2[i] - borrow
+      if ans[i] < 0 then
+         borrow = 1
+         ans[i] += 0x100
+      else
+         borrow = 0
+      end
+   end
+
+   return ans
 end
 
 function bnisneg(bn)
-   --todo
-   return bnextract(bn) < 0
+   return bn.neg
 end
 
+-- maximum num: 7
 function bnshr(bn, num)
-   --todo
-   return bncreate(flr(shr(bnextract(bn), num)))
+   local ans, x = {neg=bn.neg}, 0
+
+   for i=4,1,-1 do
+      x = shr(bn[i], num) + band(shl(x, 8), 0xff)
+      ans[i] = flr(x)
+   end
+
+   return ans
 end
 
 function bnrnd(bn)
@@ -365,14 +472,16 @@ d=bndiv(c, 14)
 test(bn2str(d), "737", "d")
 test(bnextract(d), 737, "d2")
 test(bn2str(bndecode(bnencode(d))), "737", "d3")
-goto skip_true_bignums
+test(bn2str(bnmul(d, 2)), "1474", "d4")
 e = bnmul(d, 737)
+test(bn2str(bnbnadd(e, e), true), "10863.38", "e")
 f = bnsub(bnadd(bnbnsub(bnbnadd(d, e), a), 100), 297)
 test(bn2str(f), "543452", "f")
 g = bnshr(f, 3)
 test(bn2str(g), "67931", "g")
-h = bndiv(h, 50)
+h = bndiv(g, 50)
 test(bn2str(h), "1358", "h")
+test(bnextract(bnbnsub(h, bncreate(2467))), -1109, "h2")
 i = bnmul(bnbnsub(h, bncreate(2467)), 3)
 test(bn2str(i), "-3327", "i")
 test(bn2str(bndecode(bnencode(i))), "-3327", "i2")

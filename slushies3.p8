@@ -422,7 +422,7 @@ function bnisneg(bn)
    return bn.neg
 end
 
--- maximum num: 7
+--maximum num: 7
 function bnshr(bn, num)
    local ans, x = {neg=bn.neg}, 0
 
@@ -434,9 +434,23 @@ function bnshr(bn, num)
    return ans
 end
 
+--only positive values for bn
 function bnrnd(bn)
-   --todo
-   return bncreate(flr(bnextract(bn) * rnd()))
+   local lead = true
+   local ans={0,0,0,0,neg=false}
+
+   for i=4,1,-1 do
+      if lead then
+         if bn[i] > 0 then
+            ans[i] = flr(rnd(bn[i]))
+            lead = false
+         end
+      else
+         ans[i] = flr(rnd(0x100))
+      end
+   end
+
+   return ans
 end
 
 --not really a bn but whatever
@@ -459,6 +473,7 @@ function test(a, b, name)
    while true do end
 end
 
+goto skiptests
 a=bncreate(257)
 test(bnextract(a), 257, "a")
 b=bnmul(a, 39)
@@ -485,10 +500,13 @@ test(bnextract(bnbnsub(h, bncreate(2467))), -1109, "h2")
 i = bnmul(bnbnsub(h, bncreate(2467)), 3)
 test(bn2str(i), "-3327", "i")
 test(bn2str(bndecode(bnencode(i))), "-3327", "i2")
-::skip_true_bignums::
 j = bncreate(-9000)
 test(bn2str(j), "-9000", "j")
 test(bn2str(bndecode(bnencode(j))), "-9000", "j2")
+k = 0xbeef.0001
+srand(0)
+test(tostr(bnencode(bnrnd(bndecode(k))), true), tostr(0x28fc.a9ba, true), "k")
+::skiptests::
 
 -->8
 --main game implementation
@@ -547,7 +565,7 @@ if sel==1 then
    pause()
 
    stats = {
-      m = bncreate(100),
+      m = bncreate(10000),
       s = bncreate(0),
       h = 100,
       c = bncreate(10),
@@ -606,7 +624,7 @@ print(bn2str(stats.s),45,21)
 print(stats.h,45,27)
 print(bn2str(stats.c),45,33)
 print(date2str(stats.d),45,39)
-print(stats.p,45,45)
+print(bn2str(bncreate(100 * stats.p), true),45,45)
 
 m = {
    "run",3,57,
@@ -755,12 +773,12 @@ y = numbermenu(true, 1, 25)
 if (y == nil) goto status
 
 if y == 0 then
-   y = bndiv(stats.m, z)
+   y = bndiv(bndiv(stats.m, 100), z)--yes, this is awful, but it allows bndiv to be simpler
 else
    y = bncreate(y)
 end
 
-z = bnbnsub(stats.m, bnmul(y, z))
+z = bnbnsub(stats.m, bnmul(y, z * 100))
 if bnisneg(z) then
    clear()
    print("not enough")
@@ -811,7 +829,7 @@ else
    print("you were caught,")
    print("paid a fine, and spent")
    print("two weeks in jail")
-   stats.m = bnsub(stats.m, 200)
+   stats.m = bnsub(stats.m, 20000)
    stats.d = dateadd(stats.d, 14)
    stats.h = 50
 end
@@ -829,9 +847,9 @@ elseif sel == 1 then
 elseif sel == 2 then
    z = 50
 else
-   z = 100
+   z = 100 - stats.h
 end
-if (z > 100 - stats.h) z = (100 - stats.h)
+if (z > 100 - stats.h) z = 100 - stats.h
 y = bnsub(stats.s, z)
 if bnisneg(y) then
    stats.s = bncreate(0)
@@ -898,13 +916,13 @@ print(stats.h)
 print(z)
 cursor(1, 25)
 if stats.h < 0 then
-   stats.m = bnsub(stats.m, 250)
+   stats.m = bnsub(stats.m, 25000)
    stats.h = 10
    print("you lost")
 else
    z = flr(80 * rnd())
    print("money+" .. z)
-   stats.m = bnadd(stats.m, z)
+   stats.m = bnadd(stats.m, z * 100)
 end
 pause()
 goto status
@@ -940,7 +958,7 @@ print("met " .. bn2str(z) .. " people")
 pause()
 stats.c = bnbnadd(stats.c, z)
 stats.d = dateadd(stats.d, y)
-y = bnmul(bncreate(y), 10)
+y = bnmul(bncreate(y), 1000)
 stats.m = bnbnsub(stats.m, y)
 goto status
 
@@ -969,10 +987,10 @@ cursor(1, 25)
 
 if y > 0 then
    print("you won")
-   stats.m = bnadd(stats.m, 10 * y + 50)
+   stats.m = bnbnadd(stats.m, bnmul(bncreate(10 * y + 50), 100))
 else
    print("you lose")
-   stats.m = bnsub(stats.m, 10 * z + 50)
+   stats.m = bnbnsub(stats.m, bnmul(bncreate(10 * z + 50), 100))
 end
 print("new total " .. bn2str(stats.m, true))
 pause()
@@ -985,8 +1003,9 @@ y = bnadd(bnmul(stats.c, -1), 100)
 if (not bnisneg(y)) z += flr(bnextract(y) * rnd())
 if (z < 250) z = 250
 z = flr(z)
+z = bnmul(bncreate(z), 100)
 
-if bnisneg(bnsub(stats.m, z)) or stats.d > 365 then
+if bnisneg(bnbnsub(stats.m, z)) or stats.d > 365 then
    if stats.d > 365 then
       print("it's too late")
    else
@@ -997,7 +1016,7 @@ if bnisneg(bnsub(stats.m, z)) or stats.d > 365 then
    goto status
 end
 print("to hire an attorney")
-print("it will cost " .. z)
+print("it will cost " .. bn2str(z, true))
 sel = menu({"yes", "no"}, 1, 15)
 
 if (sel != 1) goto status
@@ -1006,17 +1025,17 @@ clear()
 if flr(10 * rnd()) == 0 then
    print("your attorney failed")
    print("but refunded a little")
-   stats.m = bnsub(stats.m, flr(z/2))
+   stats.m = bnbnsub(stats.m, bnshr(z, 1))
 else
    print("you won")
-   stats.m = bnsub(stats.m, z)
+   stats.m = bnbnsub(stats.m, z)
    stats.d = flr(stats.d / 2)
 end
 pause()
 goto status
 
 ::endscreen::
-z = bnbnsub(stats.m, bnmul(bncreate(10000), 5))
+z = bnbnsub(stats.m, bnmul(bncreate(10000), 500))
 if not bnisneg(z) and stats.d <= 365 then
    clear()
    print("2005 ad...")
@@ -1026,7 +1045,7 @@ if not bnisneg(z) and stats.d <= 365 then
    print("you are its ceo. you are...")
    print("the richest man alive.")
    new_stats = {
-      m=bnmul(bncreate(1000), 1000),
+      m=bnmul(bncreate(10000), 10000),
       s=bncreate(1000),
       h=100,
       c=bncreate(100),
@@ -1078,7 +1097,7 @@ elseif stats.d > 720 then
    z = bnmul(bncreate(1000), 1000)
    if bnisneg(bnbnsub(stats.c, z)) then
       z = bnbnsub(z, stats.c)
-      stats.m = bnbnsub(stats.m, bnmul(z, 5))
+      stats.m = bnbnsub(stats.m, bnmul(z, 500))
       stats.d = 0x7fff -- modified since this is so frequently out of range
       stats.c = bnmul(bncreate(1000), 1000)
    end
@@ -1171,7 +1190,7 @@ elseif y == 3 then
       print("of whoopin on his")
       print("butt and took his")
       print("wallet.")
-      stats.m = bnbnadd(stats.m, bnmul(bncreate(10), flr(200 * rnd())))
+      stats.m = bnbnadd(stats.m, bnmul(bncreate(10), 100 * flr(200 * rnd())))
    else
       stats.s = bnbnsub(stats.s, bnshr(bnrnd(stats.s), 1))
       stats.c = bnsub(stats.c, flr(15 * rnd()))
@@ -1199,7 +1218,7 @@ else
    if (bnisneg(bnbnsub(stats.s, z))) z = stats.s
    print(bn2str(z))
    print("customers")
-   stats.m = bnbnadd(stats.m, bnmul(z, stats.p))
+   stats.m = bnbnadd(stats.m, bnmul(z, stats.p * 100))--todo
    stats.s = bnbnsub(stats.s, z)
 end
 cursor(1, 31)

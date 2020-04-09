@@ -33,7 +33,7 @@ end
 
 function menu(lst,x,y,sel)
    show_commentary_icon()
-   
+
    if (x == nil) x = 5
    if (y == nil) y = 12
    if (sel == nil) sel = 1
@@ -1004,10 +1004,17 @@ register_commentary({"it's not at all explained in the game, "
 
 clear()
 heading("end game")
-sel=menu({"yes", "no"}, 5, 12, 2)
+m={"yes", "no"}
+if (count_commentaries_seen() >= 40) add(m, "nothing ever really ends")
+sel=menu(m, 5, 12, 2)
 
 if sel == 1 then
    goto endscreen
+elseif sel == 2 then
+   clear_commentary()
+   clear()
+   --todo: 100% ending stuff happens here
+   pause()
 else
    goto status
 end

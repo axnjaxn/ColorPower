@@ -543,7 +543,7 @@ function clear_commentary()
    commentary = nil
 end
 
-function run_commentary()
+function run_commentary(crazyflag)
    if (commentary == nil) return
 
    --animate screen slide upwards
@@ -600,6 +600,7 @@ function run_commentary()
       color(0)
       printmulti(commentary.pages[pageno], 37, 128, 67)
       flip()
+      if (crazyflag and pageno == #commentary.pages) break
       while true do
          if btnp(0) or btnp(2) or btnp(5) then
             pageno = max(1, pageno - 1)
@@ -610,6 +611,32 @@ function run_commentary()
          end
          flip()
       end
+   end
+
+   if crazyflag then
+      wait(60)
+      savescr()
+      local n=0
+      while true do
+         loadscr()
+         for i=1,n do
+            spr(flr(rnd(64)), rnd(136)-8, rnd(136)-8)
+            if (n > 30 and i==(n-30)/2) savescr() 
+         end
+         palt(11, true)
+         color(7)
+         for r=-1,1 do
+            for c=-1,1 do
+               printmulti(commentary.pages[pageno], 37+c, 128+c, 67+r)
+            end
+         end
+         camera()
+         color(0)
+         printmulti(commentary.pages[pageno], 37, 128, 67)
+         flip()
+         if (n < 400) n += 0.5
+      end
+      return
    end
 
    --animate out dither
@@ -1022,8 +1049,8 @@ elseif sel == 3 then
                         "how will you remember this experience? look at where you're at right now. i mean, look at your surroundings.",
                         "just how accurately will you remember this time in your life? or how much of it will pass, without effort, into myth?",
                         "\n\n\nperhaps it is the myths that make us who we are."}, 0)
-   run_commentary()
-   goto status
+   run_commentary(true)
+   goto mainlogo
 else
    goto status
 end

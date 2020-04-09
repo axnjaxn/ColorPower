@@ -4,8 +4,6 @@ __lua__
 --common
 cartdata("axnjaxn_slushies3")
 
---todo: back button everywhere
-
 function clear()
    camera(0,-32)
    cls()
@@ -18,10 +16,8 @@ function pause()
    local ok
    repeat
       flip()
-      ok = btnp(4)
-   until ok or btnp(5)
+   until btnp(4)
    flip()
-   return ok
 end
 
 function wait(frames)
@@ -49,7 +45,6 @@ function menu(lst,x,y,sel)
       elseif btnp(4) then
          return sel
       elseif btnp(5) then
-         return nil
       end
    end
 end
@@ -663,7 +658,7 @@ goto status
 ::supplymenu::
 clear()
 heading("supply")
-sel=menu({"buy","price","steal","eat"})
+sel=menu({"buy","price","steal","eat","back"})
 
 if sel == 1 then
    goto buyscreen
@@ -680,7 +675,7 @@ end
 ::fightmenu::
 clear()
 heading("fight")
-sel=menu({"dojo","street"})
+sel=menu({"dojo","street","back"})
 
 if sel == 1 then
    goto dojoscreen
@@ -693,7 +688,7 @@ end
 ::nightmenu::
 clear()
 heading("night")
-sel=menu({"sleep","clubbing"})
+sel=menu({"sleep","clubbing","back"})
 
 if sel == 1 then
    goto sleepscreen
@@ -706,7 +701,7 @@ end
 ::courtmenu::
 clear()
 heading("court")
-sel=menu({"sue competitors","file a claim"})
+sel=menu({"sue competitors","file a claim","back"})
 
 if sel == 1 then
    goto suescreen
@@ -804,15 +799,17 @@ goto status
 ::eatscreen::
 clear()
 print("eat how many?")
-sel = menu({"25", "50", "full"}, 1, 9)
+sel = menu({"25", "50", "full", "cancel"}, 1, 9)
 if sel == nil then
    goto status
 elseif sel == 1 then
    z = 25
 elseif sel == 2 then
    z = 50
-else
+elseif sel == 3 then
    z = 100 - stats.h
+else
+   goto status
 end
 if (z > 100 - stats.h) z = 100 - stats.h
 y = bnsub(stats.s, z)

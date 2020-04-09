@@ -32,6 +32,8 @@ function wait(frames)
 end
 
 function menu(lst,x,y,sel)
+   show_commentary_icon()
+   
    if (x == nil) x = 5
    if (y == nil) y = 12
    if (sel == nil) sel = 1
@@ -89,6 +91,7 @@ function numbermenu(is_int, dx, dy, x, y)
 
    while true do
       loadscr()
+      show_commentary_icon()
 
       j=0
       for i=1,#m-2,3 do
@@ -499,7 +502,7 @@ function register_commentary(pages, id, hidden_icon)
 end
 
 function show_commentary_icon()
-   if (not commentary or commentary.hidden_icon --[[or dget(commentary.id) > 0]]) return
+   if (not commentary or commentary.hidden_icon or dget(commentary.id) > 0) return
    spr(57, 60, 88)
 end
 
@@ -729,10 +732,10 @@ m={"new game", "load game", "credits"}
 if (dget(0)==0) del(m,m[2])
 
 n = count_commentaries_seen()
-if n > 0 then
-   s = n .. "/" .. 2
-   s = (100 * n/2) .. "%"
-   print(s, 121-4*#s, 51, 7)
+complete = 100 * n / 40
+if complete >= 10 then
+   s = complete .. "%"
+   print(s, 121-4*#s, 51, 8)
 end
 
 sel = menu(m, 8, 16, #m-1)
@@ -1449,14 +1452,14 @@ clear_commentary()
 clear()
 y = flr(10 * rnd()) - 5
 if y == 1 then
-   run_commentary({"gotta be careful not to let your slushies melt! you can lose up to 25% of them at once this way."}, 29)
+   register_commentary({"gotta be careful not to let your slushies melt! you can lose up to 25% of them at once this way."}, 29)
 
    print("some slushies melted")
    z = bnrnd(bnshr(stats.s, 2))
    stats.s = bnbnsub(stats.s, z)
    print("you lost " .. bn2str(z))
 elseif y == 2 then
-   run_commentary({"i definitely have a lot of questions about your regular customers."}, 28)
+   register_commentary({"i definitely have a lot of questions about your regular customers."}, 28)
 
    print("some customers got")
    print("sick of slushies")
@@ -1464,7 +1467,7 @@ elseif y == 2 then
    print("you lost " .. bn2str(z))
    stats.c = bnbnsub(stats.c, z)
 elseif y == 3 then
-   run_commentary({"fully 10% of the time, arnold schwarzenegger shows up, "
+   register_commentary({"fully 10% of the time, arnold schwarzenegger shows up, "
                       .. "fresh off his 2003 election win, "
                       .. "ready to wreck stuff.",
                    "arnold was a recurring villain in the slushies series, "
@@ -1481,7 +1484,7 @@ elseif y == 3 then
       print("he bought one...",1,25)
       pause()
 
-      run_commentary({"with an extremely high karate rank (above 40!) you finally get to start automatically "
+      register_commentary({"with an extremely high karate rank (above 40!) you finally get to start automatically "
                          .. "winning encounters with arnold some percentage of the time.",
                       "i could only guess how much cash he'd keep on his person."}, 26)
 
@@ -1497,12 +1500,12 @@ elseif y == 3 then
       if (bnisneg(stats.c)) stats.c = bncreate(0)
    end
 elseif y == 4 then
-   run_commentary({"okay, okay\n\n"
+   register_commentary({"okay, okay\n\n"
                       .. "so this one is a complicated inside joke, "
                       .. "and we can get through it together.",
                    "the pirate nun was a woman who appeared on tv wearing an eyepatch "
-                   .. "to compensate for a stroke she'd suffered. ~TOTALLY~ hilarious, right brian? good gravy.",
-                   "she's a nazi nun i think in an oblique reference to 'the sound of music'",
+                   .. "to compensate for a stroke she'd suffered. ~TOTALLY~ hilarious, right brian?\ngood gravy.",
+                   "this character is a nazi nun i think in an oblique reference to 'the sound of music'",
                    "then the bit before that was inspired by a family friend who'd seen a sign for "
                       .. "st. john the baptist catholic church and asked what a 'baptist catholic' was.",
                    "i thought it was funnier if the baptist portion of that name was actually a 'german baptist,' "
@@ -1520,7 +1523,7 @@ elseif y == 4 then
       print("you with a ruler...", 1, 19)
       pause()
 
-      run_commentary({"at a karate level of 12, this screen changes from chipping at your health to giving you a bonus customer."}, 24)
+      register_commentary({"at a karate level of 12, this screen changes from chipping at your health to giving you a bonus customer."}, 24)
 
       clear()
       print("but you defended")

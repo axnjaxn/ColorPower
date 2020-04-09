@@ -485,7 +485,7 @@ end
 --commentary system
 function count_commentaries_seen()
    local count = 0
-   for i=8,63 do
+   for i=24,63 do
       if (dget(i) > 0) count += 1
    end
    return count
@@ -646,7 +646,7 @@ end
 --main game implementation
 cls()
 color(7)
-camera(0, -32)
+camera(0, -20)
 printmulti("the following game was developed and released "
               .. "on the casio graphing calculator series "
               .. "in november 2003.",
@@ -654,8 +654,11 @@ printmulti("the following game was developed and released "
 printmulti("the gameplay and mechanics  have been retained, "
               .. "completely unrevised and unimproved,\nfrom the original.",
            0, 127, 30, true)
-printmulti("press \142 (z key) to continue",
+printmulti("your progress will be auto-saved as you play.",
            0, 127, 60, true)
+
+printmulti("press \142 (z key) to continue",
+           0, 127, 78, true)
 pause()
 
 register_commentary({"very clever!\n"
@@ -745,15 +748,17 @@ if sel==1 then
                            .. "slushies 1 and 2 were other calculator games i'd made, "
                            .. "both of which were blatant rip-offs of every lemonade stand "
                            .. "business simulator game ever.",
-                        "i didn't have a ti-83, so i made my own. "
-                           .. "they were pretty primitive, but over time i made increasingly "
+                        "they were pretty primitive, but over time i made increasingly "
                            .. "complex sequels, including one called "
                            .. "'sim inc.' which i built earlier in 2003.",
                         "this was actually meant to be a terminator 2-style "
                            .. "plothook to explain how all of the games were "
                            .. "part of one big slushyverse.",
                         "also, 'fixing things' for a large corporation "
-                           .. "apparently only takes $50,000 in the slushyverse."}, 61)
+                           .. "apparently only takes $50,000 in the slushyverse.",
+                        "i feel obliged to make one more comment here: this version of the game "
+                           .. "received a tagline from my friend matt, so without further ado,",
+                        "welcome to slushies 3:\nthe slush strikes back"}, 61)
 
    clear()
    print("2004 ad...")
@@ -1271,7 +1276,7 @@ while y > 0 and z > 0 do
    cursor(21, 1)
    print(y)
    print(z)
-   wait(10)
+   wait(5)
 end
 loadscr()
 cursor(21, 1)
@@ -1406,7 +1411,7 @@ if not bnisneg(z) and stats.d <= 365 then
    clear()
    print("the end", 50, 30)
    pause()
-elseif stats.d > 720 then
+elseif stats.d >= 720 then
    register_commentary({
          "this is a really weird ending.\n\n"
             .. "the first thing you do after zooming "
@@ -1484,7 +1489,7 @@ elseif y == 3 then
       print("he bought one...",1,25)
       pause()
 
-      register_commentary({"with an extremely high karate rank (above 40!) you finally get to start automatically "
+      register_commentary({"with an extremely high karate rank (above 40!) you finally get to start "
                          .. "winning encounters with arnold some percentage of the time.",
                       "i could only guess how much cash he'd keep on his person."}, 26)
 

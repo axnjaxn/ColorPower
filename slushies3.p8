@@ -487,7 +487,7 @@ function count_commentaries_seen()
    end
    return count
 end
-   
+
 commentary = nil
 function register_commentary(pages, id, hidden_icon)
    if (hidden_icon == nil) hidden_icon = false
@@ -520,7 +520,7 @@ end
 
 function printmulti(s, x1, x2, y, centered)
    if (centered == nil) centered = true
-   
+
    local line
    local x = x1
    while s != nil do
@@ -542,7 +542,7 @@ end
 
 function run_commentary()
    if (commentary == nil) return
-   
+
    --animate screen slide upwards
    rectfill(0,64,127,127,0)
    for i=0,7 do
@@ -608,7 +608,7 @@ function run_commentary()
          flip()
       end
    end
-   
+
    --animate out dither
    for frame=10,0,-1 do
       i=0
@@ -685,6 +685,11 @@ printmulti("to activate the game's\npop-up commentary",
 pause()
 
 ::mainlogo::
+register_commentary({"welcome to slushies 3!\n"
+                        .. "i recently rescued the source code from my old graphing calculator "
+                        .. "and spent some time rebuilding the game as a pico-8 cartridge, "
+                        .. "which is how you're playing it!"}, 62)
+
 clear()
 for i=0,12 do spr(6,24+6*i,0) end
 flip()
@@ -702,6 +707,8 @@ for i=0,12 do spr(6,24+6*i,48) end
 pause()
 
 ::mainmenu::
+clear_commentary()
+
 clear()
 flip()
 for r=0,7 do
@@ -731,6 +738,20 @@ end
 sel = menu(m, 8, 16, #m-1)
 
 if sel==1 then
+   register_commentary({"okay, so:\n"
+                           .. "slushies 1 and 2 were other calculator games i'd made, "
+                           .. "both of which were blatant rip-offs of every lemonade stand "
+                           .. "business simulator game ever.",
+                        "i didn't have a ti-83, so i made my own. "
+                           .. "they were pretty primitive, but over time i made increasingly "
+                           .. "complex sequels, including one called "
+                           .. "'sim inc.' which i built earlier in 2003.",
+                        "this was actually meant to be a terminator 2-style "
+                           .. "plothook to explain how all of the games were "
+                           .. "part of one big slushyverse.",
+                        "also, 'fixing things' for a large corporation "
+                           .. "apparently only takes $50,000 in the slushyverse."}, 61)
+
    clear()
    print("2004 ad...")
    print("your corporation, slushies")
@@ -755,6 +776,15 @@ if sel==1 then
    }
    savegame()
 elseif sel==#m then
+   register_commentary({"when i was doing the conversion of this game, "
+                           .. "i found that slushies 3 had not only the "
+                           .. "obvious self-laudatory credits you'd see in every "
+                           .. "other solo project i ever made,",
+                        "but also the names of several friends who played "
+                           .. "the slushies games listed as 'testers.'"
+                           .. "\nnaturally, i redacted those from this version, "
+                           .. "to avoid hurting their future job prospects."}, 60)
+
    clear()
    print("slushies 3 pico-8 port")
    print("----------------------")
@@ -770,6 +800,8 @@ stats = loadgame()
 
 ::status::
 savegame()
+
+clear_commentary()
 
 clear()
 line(1,1,126,1)
@@ -857,6 +889,18 @@ elseif sel == 6 then goto endmenu
 end
 
 --teacher screen
+register_commentary({"at the bottom of the original source code "
+                     .. "of this game was the code for this screen.\n"
+                     .. "i could not remember at all why it was here or "
+                     .. "what it even *was*. clearly not game code, and "
+                     .. "not even helpful on a math test.",
+                     "when i finally remembered why a random button on the keypad "
+                     .. "would take me to this screen, it hit me like a ton of bricks!",
+                     "this was intended to help you fake working on math problems "
+                     .. "if a teacher saw you playing my game in class.\n"
+                     .. "naturally, i've preserved it in this remake."
+                    }, 59)
+
 clear()
 spr(32, 1, 1, 3, 1)
 spr(35, 19*6+1, 9, 2, 1)
@@ -871,6 +915,8 @@ pause()
 goto status
 
 ::supplymenu::
+clear_commentary()
+
 clear()
 heading("supply")
 sel=menu({"buy","price","steal","eat","back"})
@@ -888,6 +934,12 @@ else
 end
 
 ::fightmenu::
+
+register_commentary({
+      "why exactly does a business simulator need to have a street fighting subplot?\n",
+      "i imagine it's probably 50% because i saw it in another game and 50% because i was also "
+         .. "right in the middle of karate lessons in my life."}, 58)
+
 clear()
 heading("fight")
 sel=menu({"dojo","street","back"})
@@ -901,6 +953,11 @@ else
 end
 
 ::nightmenu::
+
+register_commentary({
+      "guess which of these two is the fantasy and which is the reality that came from "
+         .. "my personal experience as a high schooler."}, 57)
+
 clear()
 heading("night")
 sel=menu({"sleep","clubbing","back"})
@@ -914,6 +971,9 @@ else
 end
 
 ::courtmenu::
+
+register_commentary({"yes, there's a court system in this game."}, 56)
+
 clear()
 heading("court")
 sel=menu({"sue competitors","file a claim","back"})
@@ -927,6 +987,13 @@ else
 end
 
 ::endmenu::
+register_commentary({"it's not at all explained in the game, "
+                        .. "but this is the only place you can 'win' "
+                        .. "at slushies 3, and you have to meet two "
+                        .. "completely unmentioned criteria:\n"
+                        .. "1. have $50000\n"
+                        .. "2. have it by day 365."}, 55)
+
 clear()
 heading("end game")
 sel=menu({"yes", "no"}, 5, 12, 2)
@@ -938,6 +1005,9 @@ else
 end
 
 ::buyscreen::
+register_commentary({"not told to you on this screen:\n"
+                        .. "each box is worth fifty slushies."}, 54)
+
 clear()
 heading("buy")
 z = 5 * flr(9 * rnd()) + 10
@@ -955,6 +1025,9 @@ end
 
 z = bnbnsub(stats.m, bnmul(y, z * 100))
 if bnisneg(z) then
+   register_commentary({"some screens give you lots of text and ui, and this one just gives you two words.\n"
+                       .. "it was really hard to not want to 'fix' this game."}, 53)
+
    clear()
    print("not enough")
    pause()
@@ -965,12 +1038,16 @@ end
 goto status
 
 ::pricescreen::
+clear_commentary()
+
 clear()
 print("new price?")
 z = numbermenu(false, 1, 9)
 if (z == nil) goto status
 y = flr(4 * (z - stats.p))
 if z > 5 then
+   register_commentary({"want a slushy to cost $5.01? nah, forget that.\n"
+                           .. "a slushy can't cost more than five roast beef sandwiches before tax."}, 52)
    z = 5
    clear()
    print("adjusted price")
@@ -982,18 +1059,25 @@ stats.p = z
 goto status
 
 ::stealscreen::
+clear_commentary()
+
 clear()
 print("stealing...")
 wait(60)
 y = flr(3 * rnd())
 stats.d = dateadd(stats.d, 1)
 if y == 0 then
+   register_commentary({"does this imply competing businesses also selling "
+                           .. "flavored shave ice beverages? or are we knocking "
+                           .. "over slushy supply stores?\ndraw whatever conclusion you like."}, 51)
+
    print("success!")
    z = 5 * flr(10 * rnd()) + 5
    wait(30)
    print("stole " .. z .. " slushies")
    stats.s = bnadd(stats.s, z)
 elseif y == 1 then
+   register_commentary({"nothing is worse than a contaminated slushy."}, 50)
    print("success!")
    print("but the slushies were")
    print("contaminated and")
@@ -1001,6 +1085,9 @@ elseif y == 1 then
    stats.c = bnsub(stats.c, flr(9 * rnd()))
    if (bnisneg(stats.c)) stats.c = bncreate(0)
 else
+   register_commentary({"whatever the black market value of a slushy is, "
+                           .. "slushy larceny only lands you in jail barely long enough "
+                           .. "for the leftovers in your fridge to go bad"}, 49)
    print("you were caught,")
    print("paid a fine, and spent")
    print("two weeks in jail")
@@ -1012,6 +1099,9 @@ pause()
 goto status
 
 ::eatscreen::
+register_commentary({"it takes eating a lot of slushed ice to "
+                        .. "recover from injuries sustained running a small business."}, 48)
+
 clear()
 print("eat how many?")
 sel = menu({"25", "50", "full", "cancel"}, 1, 9)
@@ -1038,11 +1128,16 @@ end
 goto status
 
 ::dojoscreen::
+clear_commentary()
+
 clear()
 if stats.h < 45 then
+   register_commentary({"another hidden rule in the game: you have to have more than 45 health to acquire\n~REAL ULTIMATE POWER~"}, 47)
    print("you are too tired")
    pause()
 else
+   register_commentary({"there's really not a ceiling on the karate stat.\n"
+                        .. "if it gets high enough, though, you do get to beat up every single named character in this game."}, 46)
    print("current rank:" .. stats.k)
    print("training...")
    savescr()
@@ -1064,13 +1159,20 @@ end
 goto status
 
 ::streetscreen::
+register_commentary({"previous games in the franchise had offered interactive fighting games, "
+                        .. "which were -terrible-.",
+                     "thankfully, by slushies 3, i'd realized that none of those really were any good, "
+                        .. "and it was a relief to the players to not have to play "
+                        .. "a street fight with letter-based graphics at 0.5 fps."}, 45)
 clear()
 z = 90
 y = flr(15 * rnd())
 if y >= 10 and y < 13 then
+   register_commentary({"in case arnold schwarzenegger showing up in one place was not enough, he also appears here. "}, 44)
    print("arnold attack", 1, 58)
    z = 200
 elseif y >= 13 then
+   register_commentary({"why does a nearly unbeatable martial artist show up so often in this game? how frustrating."}, 43)
    print("ryu attack", 1, 58)
    z = 2000
 end
@@ -1105,6 +1207,7 @@ pause()
 goto status
 
 ::sleepscreen::
+register_commentary({"this screen just goes to show you that you really do need more than six hours of sleep."}, 42)
 clear()
 z = 10 - flr(stats.h / 10)
 print("rested " .. z .. " days")
@@ -1114,10 +1217,15 @@ pause()
 goto status
 
 ::clubbingscreen::
+clear_commentary()
 clear()
 print("how many nights?")
 y = numbermenu(true, 1, 7)
 if (y == nil or y == 0) goto status
+
+
+register_commentary({"it's fun to see what my concept of a nightclub experience was like as a kiddo, isn't it?",
+                        "\"and the social networking opportunities must be so good!\""}, 41)
 
 clear()
 print("dancing...")
@@ -1140,6 +1248,11 @@ stats.m = bnbnsub(stats.m, y)
 goto status
 
 ::suescreen::
+register_commentary({"if you notice similarity between this screen and the street fight one, it might surprise "
+                        .. "you that there's absolutely no reuse of the code between the two,",
+                     "and i literally built two almost identical things in two totally different ways.\n\n"
+                        .. "brian from 2003 did not see any similarity between going to court and kick-punching."}, 40)
+
 clear()
 y = 25
 z = 25
@@ -1176,6 +1289,7 @@ pause()
 goto status
 
 ::claimscreen::
+clear_commentary()
 clear()
 z = 12.5 * flr(stats.d / 2)
 y = bnadd(bnmul(stats.c, -1), 100)
@@ -1186,14 +1300,21 @@ z = bnmul(bncreate(z), 100)
 
 if bnisneg(bnbnsub(stats.m, z)) or stats.d > 365 then
    if stats.d > 365 then
+      register_commentary({"nowhere does it tell you this, but you can't use this screen "
+                              .. "at all after day 365."}, 39)
       print("it's too late")
    else
+      register_commentary({"no option for representing yourself, i guess?"}, 38)
       print("you don't have the")
       print("money for an attorney")
    end
    pause()
    goto status
 end
+
+register_commentary({"this screen allows you to buy more time. winning cases "
+                        .. "comes down to a dice roll, and when you win the day counter "
+                        .. "decreases by half."}, 37)
 print("to hire an attorney")
 print("it will cost " .. bn2str(z, true))
 sel = menu({"yes", "no"}, 1, 15)
@@ -1202,10 +1323,15 @@ if (sel != 1) goto status
 
 clear()
 if flr(10 * rnd()) == 0 then
+   register_commentary({"i think i'm implying here that the attorney "
+                        .. "you hire is one of those local tv attorneys "
+                        .. "that doesn't get paid unless\n~YOU GET PAID~"}, 36)
+
    print("your attorney failed")
    print("but refunded a little")
    stats.m = bnbnsub(stats.m, bnshr(z, 1))
 else
+   register_commentary({"lawyers: the real time machines of this game"}, 35)
    print("you won")
    stats.m = bnbnsub(stats.m, z)
    stats.d = flr(stats.d / 2)
@@ -1216,6 +1342,13 @@ goto status
 ::endscreen::
 z = bnbnsub(stats.m, bnmul(bncreate(10000), 500))
 if not bnisneg(z) and stats.d <= 365 then
+   register_commentary({"the far-off year of two thousand and five...\n"
+                          .. "apparently, it takes you a year to go from "
+                          .. "the $50,000 you need to win the game to "
+                          .. "richest man alive.",
+                       "also: how generic is this ending?\n\n"
+                          .. "also also: when i was 16, the assumed gender lined up 100% "
+                          .. "with the only people who ever played this game."}, 34)
    clear()
    print("2005 ad...")
    print("sim inc. has become the most")
@@ -1234,6 +1367,9 @@ if not bnisneg(z) and stats.d <= 365 then
    }
    pause()
    if not bnisneg(bnsub(stats.c, 100)) then
+      register_commentary({"ooh, an optional ending.",
+                           "yes, having more than a hundred customers "
+                              .. "evolves into a cult of personality in this version."}, 33)
       clear()
       print("everyone loves you. you even")
       print("have a fan club and a tv show.")
@@ -1244,6 +1380,10 @@ if not bnisneg(z) and stats.d <= 365 then
       pause()
    end
    if stats.k >= 12 then
+      register_commentary({"another optional ending!\n"
+                              .. "this is the wish-fulfillment fantasy "
+                              .. "of a teenage brian jackson."}, 32)
+
       clear()
       print("you kick butt. since you have")
       print("mastered 25 forms of martial")
@@ -1259,11 +1399,18 @@ if not bnisneg(z) and stats.d <= 365 then
    stats = new_stats
    savegame()
 
+   clear_commentary()
    clear()
    print("the end", 50, 30)
    pause()
 elseif stats.d > 720 then
-   --weird ending
+   register_commentary({
+         "this is a really weird ending.\n\n"
+            .. "the first thing you do after zooming "
+            .. "h.g. wells-style into the far future "
+            .. "of humanity is go right back "
+            .. "to slinging slushies."}, 31)
+
    clear()
    print("the time machine lies")
    print("unused in your garage. you")
@@ -1282,33 +1429,49 @@ elseif stats.d > 720 then
    end
    pause()
 else
+   register_commentary({"i did make one change to the bad ending here:\n"
+                           .. "in the original, this would actually delete your save.",
+                        "pretty brutal, brian."}, 30)
+
    clear()
    print("2005 ad...")
    print("you are broke. the work you")
    print("did in the past was too")
    print("little, too late. you lose.")
-   --one departure from the original version is:
-   --i don't want to zero all the stats here
    pause()
 end
 
 goto mainlogo
 
 ::runscreen::
+clear_commentary()
+
 clear()
 y = flr(10 * rnd()) - 5
 if y == 1 then
+   run_commentary({"gotta be careful not to let your slushies melt! you can lose up to 25% of them at once this way."}, 29)
+
    print("some slushies melted")
    z = bnrnd(bnshr(stats.s, 2))
    stats.s = bnbnsub(stats.s, z)
    print("you lost " .. bn2str(z))
 elseif y == 2 then
+   run_commentary({"i definitely have a lot of questions about your regular customers."}, 28)
+
    print("some customers got")
    print("sick of slushies")
    z = bnrnd(bnshr(stats.c, 2))
    print("you lost " .. bn2str(z))
    stats.c = bnbnsub(stats.c, z)
 elseif y == 3 then
+   run_commentary({"fully 10% of the time, arnold schwarzenegger shows up, "
+                      .. "fresh off his 2003 election win, "
+                      .. "ready to wreck stuff.",
+                   "arnold was a recurring villain in the slushies series, "
+                      .. "which i think was inspired by a one-off line "
+                      .. "in the ti-83 version of lemonade stand?",
+                   "either way, his pivot to politics did not change this in the slightest."}, 27)
+
    print("arnold used his")
    print("california governor")
    print("influence to hurt the")
@@ -1317,6 +1480,11 @@ elseif y == 3 then
    if stats.k >= 40 and flr((55 - stats.k) * rnd()) <= 5 then
       print("he bought one...",1,25)
       pause()
+
+      run_commentary({"with an extremely high karate rank (above 40!) you finally get to start automatically "
+                         .. "winning encounters with arnold some percentage of the time.",
+                      "i could only guess how much cash he'd keep on his person."}, 26)
+
       clear()
       print("but you opened a can")
       print("of whoopin on his")
@@ -1329,6 +1497,20 @@ elseif y == 3 then
       if (bnisneg(stats.c)) stats.c = bncreate(0)
    end
 elseif y == 4 then
+   run_commentary({"okay, okay\n\n"
+                      .. "so this one is a complicated inside joke, "
+                      .. "and we can get through it together.",
+                   "the pirate nun was a woman who appeared on tv wearing an eyepatch "
+                   .. "to compensate for a stroke she'd suffered. ~TOTALLY~ hilarious, right brian? good gravy.",
+                   "she's a nazi nun i think in an oblique reference to 'the sound of music'",
+                   "then the bit before that was inspired by a family friend who'd seen a sign for "
+                      .. "st. john the baptist catholic church and asked what a 'baptist catholic' was.",
+                   "i thought it was funnier if the baptist portion of that name was actually a 'german baptist,' "
+                      .. "a sect present in surprising number near dayton, where i grew up.",
+                   "and then why not throw in french?",
+                   "the poetic meter of the adjectives in this screen is roughly trochaic hexameter.",
+                   "great googly moogly."}, 25)
+
    print("a french german")
    print("baptist catholic nazi")
    print("pirate nun slapped")
@@ -1337,6 +1519,9 @@ elseif y == 4 then
    if stats.k >= 12 then
       print("you with a ruler...", 1, 19)
       pause()
+
+      run_commentary({"at a karate level of 12, this screen changes from chipping at your health to giving you a bonus customer."}, 24)
+
       clear()
       print("but you defended")
       print("yourself and k.o.'ed")
@@ -1350,7 +1535,7 @@ else
    if (bnisneg(bnbnsub(stats.s, z))) z = stats.s
    print(bn2str(z))
    print("customers")
-   stats.m = bnbnadd(stats.m, bnmul(z, stats.p * 100))--todo
+   stats.m = bnbnadd(stats.m, bnmul(z, stats.p * 100))
    stats.s = bnbnsub(stats.s, z)
 end
 cursor(1, 31)

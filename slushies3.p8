@@ -396,7 +396,7 @@ function bnbnsub(bn1, bn2)
    if bn1.neg != bn2.neg then
       bn2.neg = not bn2.neg
       ans = bnbnadd(bn1, bn2)
-      bn2.neg = not b2.neg
+      bn2.neg = not bn2.neg
       return ans
    end
 

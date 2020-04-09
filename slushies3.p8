@@ -2,6 +2,12 @@ pico-8 cartridge // http://www.pico-8.com
 version 18
 __lua__
 --common
+--[[
+   hey, if you're reading this for cheats,
+   that's disappointing!
+   but if you're reading it to learn,
+   i apologize for the whole thing.
+]]--
 cartdata("axnjaxn_slushies3")
 
 function clear()
@@ -13,9 +19,10 @@ function clear()
 end
 
 function pause()
-   local ok
+   show_commentary_icon()
    repeat
       flip()
+      if (btnp(5)) run_commentary()
    until btnp(4)
    flip()
 end
@@ -45,6 +52,7 @@ function menu(lst,x,y,sel)
       elseif btnp(4) then
          return sel
       elseif btnp(5) then
+         run_commentary()
       end
    end
 end
@@ -141,6 +149,8 @@ function numbermenu(is_int, dx, dy, x, y)
             print(s, dx, dy, 8)
             flip()
          end
+      elseif btnp(5) then
+         run_commentary()
       end
    end
 end
@@ -469,7 +479,211 @@ function test(a, b, name)
 end
 
 -->8
+--commentary system
+function count_commentaries_seen()
+   local count = 0
+   for i=8,63 do
+      if (dget(i) > 0) count += 1
+   end
+   return count
+end
+   
+commentary = nil
+function register_commentary(pages, id, hidden_icon)
+   if (hidden_icon == nil) hidden_icon = false
+   commentary = {
+      pages = pages,
+      id = id,
+      hidden_icon = hidden_icon
+   }
+end
+
+function show_commentary_icon()
+   if (not commentary or commentary.hidden_icon --[[or dget(commentary.id) > 0]]) return
+   spr(57, 60, 88)
+end
+
+function split(s, x1, x2)
+   n = flr((x2 - x1 + 1) / 4)
+   if (#s <= n) return s, nil
+   for i=1,n do
+      if sub(s, i, i) == "\n" then
+         return sub(s, 1, i-1), sub(s, i+1, -1)
+      end
+   end
+   for i=n, 1, -1 do
+      if sub(s, i, i) == " " then
+         return sub(s, 1, i-1), sub(s, i+1, -1)
+      end
+   end
+end
+
+function printmulti(s, x1, x2, y, centered)
+   if (centered == nil) centered = true
+   
+   local line
+   local x = x1
+   while s != nil do
+      line, s = split(s, x1, x2)
+      if centered then
+         while sub(line, -1, -1) == " " do
+            line = sub(line, 1, -2)
+         end
+         x = x1 + 0.5 * (x2 - x1) - 2 * #line
+      end
+      print(line, x, y)
+      y += 6
+   end
+end
+
+function clear_commentary()
+   commentary = nil
+end
+
+function run_commentary()
+   if (commentary == nil) return
+   
+   --animate screen slide upwards
+   rectfill(0,64,127,127,0)
+   for i=0,7 do
+      for r=0,24 do
+         memcpy(0x6000 + 256 * r, 0x6000 + 256 * (r + 1), 256)
+      end
+      flip()
+   end
+   camera()
+
+   --set up dither pattern (four rows long)
+   colors = {0, 1, 0xd, 6, 7}
+   dithermap = {1,13,4,16,9,5,12,8,3,15,2,14,11,7,10,6}
+   offsets={}
+   i=0
+   for r=0,3 do
+      for c=0,127 do
+         j=(r%4)*4+(c%4)+1
+         offsets[i] = (dithermap[j]-1)/16
+         i+=1
+      end
+   end
+
+   --animate dithered fade in background
+   for frame=0,10 do
+      i=0
+      for r=0,3 do
+         for c=0,127 do
+            col=(#colors-1)*frame/10+offsets[i]+1
+            pset(c, r+64, colors[flr(col)])
+            i+=1
+         end
+      end
+      memcpy(0x7100,0x7000,0x100)
+      memcpy(0x7200,0x7000,0x200)
+      memcpy(0x7400,0x7000,0x400)
+      memcpy(0x7800,0x7000,0x800)
+      flip()
+   end
+
+   --avatar
+   palt(0,false)
+   palt(11, true)
+   spr(12, 2, 67, 4, 8)
+   pal()
+   palt()
+
+   --and text
+   pageno = 1
+   while pageno <= #commentary.pages do
+      rectfill(37, 67, 127, 127, 7)
+      color(0)
+      printmulti(commentary.pages[pageno], 37, 128, 67)
+      flip()
+      while true do
+         if btnp(0) or btnp(2) or btnp(5) then
+            pageno = max(1, pageno - 1)
+            break
+         elseif btnp(1) or btnp(3) or btnp(4) then
+            pageno = pageno + 1
+            break
+         end
+         flip()
+      end
+   end
+   
+   --animate out dither
+   for frame=10,0,-1 do
+      i=0
+      for r=0,3 do
+         for c=0,127 do
+            col=(#colors-1)*frame/10+offsets[i]+1
+            pset(c, r+64, colors[flr(col)])
+            i+=1
+         end
+      end
+      memcpy(0x7100,0x7000,0x100)
+      memcpy(0x7200,0x7000,0x200)
+      memcpy(0x7400,0x7000,0x400)
+      memcpy(0x7800,0x7000,0x800)
+      flip()
+   end
+
+   --and slide
+   for i=0,7 do
+      for r=24,0,-1 do
+         memcpy(0x6000 + 256 * (r + 1), 0x6000 + 256 * r, 256)
+      end
+      rectfill(0, 0, 127, 3, 0)
+      flip()
+   end
+   camera(0,-32)
+
+   dset(commentary.id, 1)
+end
+
+-->8
 --main game implementation
+cls()
+color(7)
+camera(0, -32)
+printmulti("the following game was developed and released "
+              .. "on the casio graphing calculator series "
+              .. "in november 2003.",
+           0, 127, 0, true)
+printmulti("the gameplay and mechanics  have been retained, "
+              .. "completely unrevised and unimproved,\nfrom the original.",
+           0, 127, 30, true)
+printmulti("press \142 (z key) to continue",
+           0, 127, 60, true)
+pause()
+
+register_commentary({"very clever!\n"
+                     .. "i tried to think of a good easter egg for this screen, "
+                     .. "but i was so proud of myself for thinking of it "
+                        .. "(and so very proud of you!)",
+                     "that i could not come up with anything other than "
+                        .. "to say:\n\ncongratulations\nto you, "
+                        .. "my very special player,",
+                     "the hero of the story and the one for whom "
+                     .. "slushies would have been written, if i had only known back in high school "
+                     .. "that the year 2020 would eventually come and you would be here in it with me."
+                    }, 63, true)
+
+cls()
+camera(0, -32)
+printmulti("use \139\148\131\145 (arrow keys)",
+           0, 111, 0, true)--adjust r margin by four per symbol to keep centering correct
+printmulti("to navigate,",
+           0, 127, 6, true)
+printmulti("use \142 (z key) to select,",
+           0, 123, 18, true)
+printmulti("and use \151 (x key)",
+           0, 127, 30, true)
+printmulti("when you see this:",
+           0, 127, 36, true)
+spr(57, 60, 42)
+printmulti("to activate the game's\npop-up commentary",
+           0, 127, 51, true)
+pause()
+
 ::mainlogo::
 clear()
 for i=0,12 do spr(6,24+6*i,0) end
@@ -506,9 +720,15 @@ end
 print("main menu",46,8,1)
 m={"new game", "load game", "credits"}
 if (dget(0)==0) del(m,m[2])
-repeat
-   sel=menu(m, 8, 16, #m-1)
-until sel
+
+n = count_commentaries_seen()
+if n > 0 then
+   s = n .. "/" .. 2
+   s = (100 * n/2) .. "%"
+   print(s, 121-4*#s, 51, 7)
+end
+
+sel = menu(m, 8, 16, #m-1)
 
 if sel==1 then
    clear()
@@ -623,6 +843,8 @@ while true do
       sel = 0
    elseif btnp(4) then
       break
+   elseif btnp(5) then
+      run_commentary()
    end
 end
 
@@ -645,13 +867,6 @@ spr(41, 121, 25)
 spr(37, 1, 33, 3, 1)
 spr(42, 19, 33, 2, 1)
 spr(48, 61, 41, 9, 1)
-pause()
-goto status
-z/=8
-print(z, 124, 19)
-print("ans*pi", 1, 25)
-z=tostr(z * 3.14159265358979)
-print(z, 128-4*#z, 31)
 pause()
 goto status
 
@@ -952,6 +1167,7 @@ if y > 0 then
    stats.m = bnbnadd(stats.m, bnmul(bncreate(10 * y + 50), 100))
 else
    print("you lose")
+   if (z < 0) z = 0
    stats.m = bnbnsub(stats.m, bnmul(bncreate(10 * z + 50), 100))
 end
 print("new total " .. bn2str(stats.m, true))
@@ -1077,81 +1293,6 @@ end
 
 goto mainlogo
 
-::test::
-rectfill(0,64,127,127,0)
-for i=0,7 do
-   for r=0,24 do
-      memcpy(0x6000 + 256 * r, 0x6000 + 256 * (r + 1), 256)
-   end
-   flip()
-end
-
-camera()
-
-colors = {0, 1, 0xd, 6, 7}
-dithermap = {1,13,4,16,9,5,12,8,3,15,2,14,11,7,10,6}
-offsets={}
-i=0
-for r=0,3 do
-   for c=0,127 do
-      j=(r%4)*4+(c%4)+1
-      offsets[i] = (dithermap[j]-1)/16
-      i+=1
-   end
-end
-
-function split(s, x1, x2)
-   n = flr((x2 - x1 + 1) / 4)
-   if (#s <= n) return s, nil
-   for i=n, 1, -1 do
-      if sub(s, i, i) == " " then
-         return sub(s, 1, i), sub(s, i+1, -1)
-      end
-   end
-end
-
-function printmulti(s, x1, x2, y)
-   local line
-   while s != nil do
-      line, s = split(s, x1, x2)
-      print(line, x1, y)
-      y += 6
-   end
-end
-
-for frame=0,10 do
-   i=0
-   for r=0,3 do
-      for c=0,127 do
-         col=(#colors-1)*frame/10+offsets[i]+1
-         pset(c, r+64, colors[flr(col)])
-         i+=1
-      end
-   end
-   memcpy(0x7100,0x7000,0x100)
-   memcpy(0x7200,0x7000,0x200)
-   memcpy(0x7400,0x7000,0x400)
-   memcpy(0x7800,0x7000,0x800)
-   flip()
-end
-palt(0,false)
-palt(11, true)
-spr(12, 3, 67, 4, 8)
-pal()
-palt()
-color(0)
-printmulti("welcome to slushies 3!", 38, 125, 67)
-printmulti("i recently rescued the source code from my old graphing calculator "
-              .. "and spent some time rebuilding the game as a pico-8 cartridge, "
-              .. "which is how you're playing it!",
-           38, 125, 73)
-pause()
-rectfill(38, 67, 127, 127, 7)
-color(0)
-printmulti("i'm trying out a second screen to see how well paging will work in this ui", 38, 125, 67)
-pause()
-goto status
-
 ::runscreen::
 clear()
 y = flr(10 * rnd()) - 5
@@ -1249,14 +1390,14 @@ __gfx__
 000100000000100010000000100010000100000010001010001000001000000000100000100010001000100101000000bf015544e4555155ef7fffffffff77f5
 000100000000011100000000011100000100000010001010001011110000000000000000011100000000001001100000bf01554e451155155effffff45555ff1
 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000b50155445544444444fffffef5555555
-011100111110000000001000111110011100111110000100001000011100111110000000000000000000000000000000b50155445445455544eefffff44eff55
-100010100000000000011000000100100010000010001100011000100010000100000000000000000000000000000000b5011544444555555544f7f455445f55
-000010111100000000001000001000000010000100010100001000000010001000000000000000000000000000000000b4011544455101555544f7f5555fff55
-000100000010000000001000000100000100001000100100001000000100000100000000000000000000000000000000b41114e4444555f54444f74550154f5f
-001000000010000000001000000010001000001000111110001000001000000010000000000000000000000000000000b45014e44444ee455444f7f555574ffb
-010000100010011000001000100010010000001000000100001000010000100010000000000000000000000000000000f45154e44eee44444444ff7f44ff7ffb
-111110011100011000011100011100111110001000000100011100111110011100000000000000000000000000000000f44154e4eefffffe444eff77fffff7fb
-777777777777777777777777777777777777700000000000000000000000000000000000000000000000000000000000f44514e4e4ffffe4444eff77777777fb
+011100111110000000001000111110011100111110000100001000011100111110000000077777000000000000000000b50155445445455544eefffff44eff55
+1000101000000000000110000001001000100000100011000110001000100001000000007ccacc600000000000000000b5011544444555555544f7f455445f55
+0000101111000000000010000010000000100001000101000010000000100010000000007ccacc600000000000000000b4011544455101555544f7f5555fff55
+0001000000100000000010000001000001000010001001000010000001000001000000007ccacc600000000000000000b41114e4444555f54444f74550154f5f
+0010000000100000000010000000100010000010001111100010000010000000100000007ccccc600000000000000000b45014e44444ee455444f7f555574ffb
+0100001000100110000010001000100100000010000001000010000100001000100000007ccacc600000000000000000f45154e44eee44444444ff7f44ff7ffb
+111110011100011000011100011100111110001000000100011100111110011100000000066666000000000000000000f44154e4eefffffe444eff77fffff7fb
+000000000000000000000000000000000000000000000000000000000000000000000000000600000000000000000000f44514e4e4ffffe4444eff77777777fb
 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f42554e4eeefffe44444ef777f7777fb
 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f44455e4eeffff4e4444ef777f77777b
 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f44455e4eeeffe44444eff77ff77777b

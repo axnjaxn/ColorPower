@@ -1010,11 +1010,20 @@ sel=menu(m, 5, 12, 2)
 
 if sel == 1 then
    goto endscreen
-elseif sel == 2 then
+elseif sel == 3 then
    clear_commentary()
-   clear()
-   --todo: 100% ending stuff happens here
-   pause()
+   register_commentary({"the day i finished slushies 3, november 6, was 6,000 days ago today, which is also almost half of my life so far.",
+                        "developing this game and games like it was how i decided upon my career!",
+                        "but now, looking back on the actual contents of this game, i see how simplistic and broken both the program and the gameplay were.",
+                        "still: working on this game, offering it up to friends and classmates, watching them enjoy it - those memories propelled me through difficult times.",
+                        "it's a strange thing, memory.\n\nthings seem so much bigger when you're in the middle of them.",
+                        "the narrative changes. the story we tell ourselves. the stories we tell each other. the story i'm telling you.",
+                        "each narrator unreliable, the rules of the games they play just as simplistic or unfair as this one.",
+                        "how will you remember this experience? look at where you're at right now. i mean, look at your surroundings.",
+                        "just how accurately will you remember this time in your life? or how much of it will pass, without effort, into myth?",
+                        "\n\n\nperhaps it is the myths that make us who we are."}, 0)
+   run_commentary()
+   goto status
 else
    goto status
 end

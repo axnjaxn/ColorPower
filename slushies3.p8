@@ -1141,23 +1141,24 @@ goto status
 
 ::suescreen::
 clear()
-z = 90
+y = 25
+z = 25
 cursor(1,1)
 print("you")
-print("him")
+print("them")
 savescr()
 while y > 0 and z > 0 do
    if (flr(rnd() * 2) == 0) y -= 1
    if (flr(rnd() * 2) == 0) z -= 1
 
    loadscr()
-   cursor(17, 1)
+   cursor(21, 1)
    print(y)
    print(z)
    wait(10)
 end
 loadscr()
-cursor(17, 1)
+cursor(21, 1)
 print(y)
 print(z)
 cursor(1, 25)

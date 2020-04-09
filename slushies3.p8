@@ -473,41 +473,6 @@ function test(a, b, name)
    while true do end
 end
 
-goto skiptests
-a=bncreate(257)
-test(bnextract(a), 257, "a")
-b=bnmul(a, 39)
-test(bn2str(b), "10023", "b")
-c=bnadd(b, 300)
-test(bnextract(c), 10323, "c")
-test(bn2str(c), "10323", "c2")
-test(bnextract(bnsub(c, 10000)), 323, "c3")
-test(bn2str(bnsub(c, 20000)), "-9677", "c4")
-d=bndiv(c, 14)
-test(bn2str(d), "737", "d")
-test(bnextract(d), 737, "d2")
-test(bn2str(bndecode(bnencode(d))), "737", "d3")
-test(bn2str(bnmul(d, 2)), "1474", "d4")
-e = bnmul(d, 737)
-test(bn2str(bnbnadd(e, e), true), "10863.38", "e")
-f = bnsub(bnadd(bnbnsub(bnbnadd(d, e), a), 100), 297)
-test(bn2str(f), "543452", "f")
-g = bnshr(f, 3)
-test(bn2str(g), "67931", "g")
-h = bndiv(g, 50)
-test(bn2str(h), "1358", "h")
-test(bnextract(bnbnsub(h, bncreate(2467))), -1109, "h2")
-i = bnmul(bnbnsub(h, bncreate(2467)), 3)
-test(bn2str(i), "-3327", "i")
-test(bn2str(bndecode(bnencode(i))), "-3327", "i2")
-j = bncreate(-9000)
-test(bn2str(j), "-9000", "j")
-test(bn2str(bndecode(bnencode(j))), "-9000", "j2")
-k = 0xbeef.0001
-srand(0)
-test(tostr(bnencode(bnrnd(bndecode(k))), true), tostr(0x28fc.a9ba, true), "k")
-::skiptests::
-
 -->8
 --main game implementation
 ::mainlogo::

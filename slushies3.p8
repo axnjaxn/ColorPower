@@ -664,7 +664,7 @@ pause()
 register_commentary({"very clever!\n"
                      .. "i tried to think of a good easter egg for this screen, "
                      .. "but i was so proud of myself for thinking of it "
-                        .. "(and so very proud of you!)",
+                        .. "and so very proud of you,",
                      "that i could not come up with anything other than "
                         .. "to say:\n\ncongratulations\nto you, "
                         .. "my very special player,",
@@ -750,11 +750,11 @@ if sel==1 then
                            .. "business simulator game ever.",
                         "they were pretty primitive, but over time i made increasingly "
                            .. "complex sequels, including one called "
-                           .. "'sim inc.' which i built earlier in 2003.",
+                           .. "\"sim inc.\" which i built earlier in 2003.",
                         "this was actually meant to be a terminator 2-style "
                            .. "plothook to explain how all of the games were "
                            .. "part of one big slushyverse.",
-                        "also, 'fixing things' for a large corporation "
+                        "also, \"fixing things\" for a large corporation "
                            .. "apparently only takes $50,000 in the slushyverse.",
                         "i feel obliged to make one more comment here: this version of the game "
                            .. "received a tagline from my friend matt, so without further ado,",
@@ -789,7 +789,7 @@ elseif sel==#m then
                            .. "obvious self-laudatory credits you'd see in every "
                            .. "other solo project i ever made,",
                         "but also the names of several friends who played "
-                           .. "the slushies games listed as 'testers.'"
+                           .. "the slushies games listed as \"testers.\""
                            .. "\nnaturally, i redacted those from this version, "
                            .. "to avoid hurting their future job prospects."}, 60)
 
@@ -996,7 +996,7 @@ end
 
 ::endmenu::
 register_commentary({"it's not at all explained in the game, "
-                        .. "but this is the only place you can 'win' "
+                        .. "but this is the only place you can \"win\" "
                         .. "at slushies 3, and you have to meet two "
                         .. "completely unmentioned criteria:\n"
                         .. "1. have $50000\n"
@@ -1041,7 +1041,7 @@ end
 z = bnbnsub(stats.m, bnmul(y, z * 100))
 if bnisneg(z) then
    register_commentary({"some screens give you lots of text and ui, and this one just gives you two words.\n"
-                       .. "it was really hard to not want to 'fix' this game."}, 53)
+                       .. "it was really hard to not want to \"fix\" this game."}, 53)
 
    clear()
    print("not enough")
@@ -1062,7 +1062,7 @@ if (z == nil) goto status
 y = flr(4 * (z - stats.p))
 if z > 5 then
    register_commentary({"want a slushy to cost $5.01? nah, forget that.\n"
-                           .. "a slushy can't cost more than five roast beef sandwiches before tax."}, 52)
+                           .. "a slushy can't cost more than five roast beef sandwiches."}, 52)
    z = 5
    clear()
    print("adjusted price")
@@ -1517,10 +1517,10 @@ elseif y == 4 then
                       .. "and we can get through it together.",
                    "the pirate nun was a woman who appeared on tv wearing an eyepatch "
                    .. "to compensate for a stroke she'd suffered. ~TOTALLY~ hilarious, right brian?\ngood gravy.",
-                   "this character is a nazi nun i think in an oblique reference to 'the sound of music'",
+                   "this character is a nazi nun i think in an oblique reference to \"the sound of music\"",
                    "then the bit before that was inspired by a family friend who'd seen a sign for "
-                      .. "st. john the baptist catholic church and asked what a 'baptist catholic' was.",
-                   "i thought it was funnier if the baptist portion of that name was actually a 'german baptist,' "
+                      .. "st. john the baptist catholic church and asked what a \"baptist catholic\" was.",
+                   "i thought it was funnier if the baptist portion of that name was actually \"german baptist,\" "
                       .. "a sect present in surprising number near dayton, where i grew up.",
                    "and then why not throw in french?",
                    "the poetic meter of the adjectives in this screen is roughly trochaic hexameter.",

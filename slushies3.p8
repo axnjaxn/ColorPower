@@ -2,12 +2,6 @@ pico-8 cartridge // http://www.pico-8.com
 version 18
 __lua__
 --common
---[[
-   hey, if you're reading this for cheats,
-   that's disappointing!
-   but if you're reading it to learn,
-   i apologize for the whole thing.
-]]--
 cartdata("axnjaxn_slushies3")
 
 function clear()
@@ -62,11 +56,8 @@ end
 function numbermenu(is_int, dx, dy, x, y)
    savescr()
 
-   if (is_int == nil) is_int = true
    if (x == nil) x = 104
    if (y == nil) y = 24
-   if (dx == nil) dx = 1
-   if (dy == nil) dy = 58
    local m = {
       "back", 2, 0,
       "1", 0, 6,
@@ -239,7 +230,6 @@ function bndecode(num)
    }
 end
 
---todo: verify cents
 function bn2str(bn, ismoney)
    local neg = bn.neg
    bn.neg = false --this algorithm will "store" the sign to simplify the logic
@@ -472,15 +462,6 @@ function date2str(d)
    return tostr(d)
 end
 
-function test(a, b, name)
-   if (a == b) return nil
-   clear()
-   print("failed test " .. name)
-   print("expected " .. b)
-   print("got " .. a)
-   while true do end
-end
-
 -->8
 --commentary system
 function count_commentaries_seen()
@@ -521,19 +502,14 @@ function split(s, x1, x2)
    end
 end
 
-function printmulti(s, x1, x2, y, centered)
-   if (centered == nil) centered = true
-
-   local line
-   local x = x1
+function printmulti(s, x1, x2, y)
+   local line, x
    while s != nil do
       line, s = split(s, x1, x2)
-      if centered then
-         while sub(line, -1, -1) == " " do
-            line = sub(line, 1, -2)
-         end
-         x = x1 + 0.5 * (x2 - x1) - 2 * #line
+      while sub(line, -1, -1) == " " do
+         line = sub(line, 1, -2)
       end
+      x = x1 + 0.5 * (x2 - x1) - 2 * #line
       print(line, x, y)
       y += 6
    end
@@ -694,15 +670,15 @@ camera(0, -20)
 printmulti("the following game was developed and released "
               .. "on the casio graphing calculator series "
               .. "in november 2003.",
-           0, 127, 0, true)
+           0, 127, 0)
 printmulti("the gameplay and mechanics  have been retained, "
               .. "completely unrevised and unimproved,\nfrom the original.",
-           0, 127, 30, true)
+           0, 127, 30)
 printmulti("your progress will be auto-saved as you play.",
-           0, 127, 60, true)
+           0, 127, 60)
 
 printmulti("press \142 (z key) to continue",
-           0, 127, 78, true)
+           0, 127, 78)
 pause()
 
 register_commentary({"very clever!\n"
@@ -720,18 +696,18 @@ register_commentary({"very clever!\n"
 cls()
 camera(0, -32)
 printmulti("use \139\148\131\145 (arrow keys)",
-           0, 111, 0, true)--adjust r margin by four per symbol to keep centering correct
+           0, 111, 0)--adjust r margin by four per symbol to keep centering correct
 printmulti("to navigate,",
-           0, 127, 6, true)
+           0, 127, 6)
 printmulti("use \142 (z key) to select,",
-           0, 123, 18, true)
+           0, 123, 18)
 printmulti("and use \151 (x key)",
-           0, 127, 30, true)
+           0, 127, 30)
 printmulti("when you see this:",
-           0, 127, 36, true)
+           0, 127, 36)
 spr(57, 60, 42)
 printmulti("to activate the game's\npop-up commentary",
-           0, 127, 51, true)
+           0, 127, 51)
 pause()
 
 ::mainlogo::
@@ -1092,7 +1068,7 @@ else
 end
 
 z = bnbnsub(stats.m, bnmul(y, z * 100))
-if bnisneg(z) then
+if z.neg then
    register_commentary({"some screens give you lots of text and ui, and this one just gives you two words.\n"
                        .. "it was really hard to not want to \"fix\" this game."}, 53)
 
@@ -1122,7 +1098,7 @@ if z > 5 then
    pause()
 end
 stats.c = bnsub(stats.c, y)
-if (bnisneg(stats.c)) stats.c = bncreate(0)
+if (stats.c.neg) stats.c = bncreate(0)
 stats.p = z
 goto status
 
@@ -1151,7 +1127,7 @@ elseif y == 1 then
    print("contaminated and")
    print("some customers left")
    stats.c = bnsub(stats.c, flr(9 * rnd()))
-   if (bnisneg(stats.c)) stats.c = bncreate(0)
+   if (stats.c.neg) stats.c = bncreate(0)
 else
    register_commentary({"whatever the black market value of a slushy is, "
                            .. "slushy larceny only lands you in jail barely long enough "
@@ -1186,7 +1162,7 @@ else
 end
 if (z > 100 - stats.h) z = 100 - stats.h
 y = bnsub(stats.s, z)
-if bnisneg(y) then
+if y.neg then
    stats.s = bncreate(0)
    stats.h += bnextract(stats.s)
 else
@@ -1221,7 +1197,7 @@ else
    stats.k += 1
    stats.h -= 45
    stats.c = bnsub(stats.c, 1)
-   if (bnisneg(stats.c)) stats.c = bncreate(0)
+   if (stats.c.neg) stats.c = bncreate(0)
    pause()
 end
 goto status
@@ -1361,12 +1337,12 @@ clear_commentary()
 clear()
 z = 12.5 * flr(stats.d / 2)
 y = bnadd(bnmul(stats.c, -1), 100)
-if (not bnisneg(y)) z += flr(bnextract(y) * rnd())
+if (not y.neg) z += flr(bnextract(y) * rnd())
 if (z < 250) z = 250
 z = flr(z)
 z = bnmul(bncreate(z), 100)
 
-if bnisneg(bnbnsub(stats.m, z)) or stats.d > 365 then
+if bnbnsub(stats.m, z).neg or stats.d > 365 then
    if stats.d > 365 then
       register_commentary({"nowhere does it tell you this, but you can't use this screen "
                               .. "at all after day 365."}, 39)
@@ -1409,7 +1385,7 @@ goto status
 
 ::endscreen::
 z = bnbnsub(stats.m, bnmul(bncreate(10000), 500))
-if not bnisneg(z) and stats.d <= 365 then
+if not z.neg and stats.d <= 365 then
    register_commentary({"the far-off year of two thousand and five...\n"
                           .. "apparently, it takes you a year to go from "
                           .. "the $50,000 you need to win the game to "
@@ -1434,7 +1410,7 @@ if not bnisneg(z) and stats.d <= 365 then
       p=0.5
    }
    pause()
-   if not bnisneg(bnsub(stats.c, 100)) then
+   if not bnsub(stats.c, 100).neg then
       register_commentary({"ooh, an optional ending.",
                            "yes, having more than a hundred customers "
                               .. "evolves into a cult of personality in this version."}, 33)
@@ -1489,7 +1465,7 @@ elseif stats.d >= 720 then
    print("your customers are somehow")
    print("different now, though.")
    z = bnmul(bncreate(1000), 1000)
-   if bnisneg(bnbnsub(stats.c, z)) then
+   if bnbnsub(stats.c, z).neg then
       z = bnbnsub(z, stats.c)
       stats.m = bnbnsub(stats.m, bnmul(z, 500))
       stats.d = 0x7fff -- modified since this is so frequently out of range
@@ -1562,7 +1538,7 @@ elseif y == 3 then
    else
       stats.s = bnbnsub(stats.s, bnshr(bnrnd(stats.s), 1))
       stats.c = bnsub(stats.c, flr(15 * rnd()))
-      if (bnisneg(stats.c)) stats.c = bncreate(0)
+      if (stats.c.neg) stats.c = bncreate(0)
    end
 elseif y == 4 then
    register_commentary({"okay, okay\n\n"
@@ -1600,7 +1576,7 @@ elseif y == 4 then
 else
    print("you sold a slushie to")
    z = bnrnd(stats.c)
-   if (bnisneg(bnbnsub(stats.s, z))) z = stats.s
+   if (bnbnsub(stats.s, z).neg) z = stats.s
    print(bn2str(z))
    print("customers")
    stats.m = bnbnadd(stats.m, bnmul(z, stats.p * 100))
@@ -1684,6 +1660,136 @@ __gfx__
 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+__label__
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+7f7f7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7f7f7
+f7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7f
+7f7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7f7
+ffffffffffffffffffffffff11111f11111f11111f11111f11111f11111f11111f11111f11111f11111f11111f11111f11111fffffffffffffffffffffffffff
+7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7
+ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+ffffffffffffffffffffffffffffffffffffffffffff1fffffffffffffffff1fffffffffffffffff1fffffffffffffffffffffffffffffffffffffffffffffff
+ffffffffffffffffffffffffffffffffffffffffffff1fffffffffffffffff1fffffffffffffffff1fffffffffffffffffffffffffffffffffffffffffffffff
+ffffffffffffffffffffffffffffffffffffffffffff1fffffffffffffffff1fffffffffffffffff1fffffffffffffffffffffffffffffffffffffffffffffff
+ffffffffffffffffffffffffffffffffffffffffffff1fffffffffffffffff1fffffffffffffffff1fffffffffffffffffffffffffffffffffffffffffffffff
+ffffffffffffffffffffffffffffffffffffffffffff1fffffffffffffffff1fffffffffffffffff1fffffffffffffffffffffffffffffffffffffffffffffff
+ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+ffffffffffffffffffffffffffffffffffffffffffff1fffffffffffffffff1fffffffffffffffff1fffffffffffffffffffffffffffffffffffffffffffffff
+ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+ffffffffffffffffffffffffffffffffffffffffffff1fffffffffffffffff1fffffffffffffffff1fffffffffffffffffffffffffffffffffffffffffffffff
+ffffffffffffffffffffffffffffffffffffffffffff1fffffffffffffffff1fffffffffffffffff1fffffffffffffffffffffffffffffffffffffffffffffff
+ffffffffffffffffffffffffffffffffffffffffffff1fffffffffffffffff1fffffffffffffffff1fffffffffffffffffffffffffffffffffffffffffffffff
+ffffffffffffffffffffffffffffffffffffffffffff1fffffffffffffffff1fffffffffffffffff1fffffffffffffffffffffffffffffffffffffffffffffff
+ffffffffffffffffffffffffffffffffffffffffffff1fffffffffffffffff1fffffffffffffffff1fffffffffffffffffffffffffffffffffffffffffffffff
+ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+ffffffffffffffffffffffffffffffffffffffffffff1fffffffffffffffff1fffffffffffffffff1fffffffffffffffffffffffffffffffffffffffffffffff
+ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+fffffffffffffffffff111ff1fffff1fff1ff111ff1fff1ff111ff11111ff111ffffffff1111fff111ff1111ff11111fffffff11111fffffffffffffffffffff
+ffffffffffffffffff1fff1f1fffff1fff1f1fff1f1fff1fff1fff1fffff1fff1fffffff1fff1f1fff1f1fff1fff1ffffffffffff1ffffffffffffffffffffff
+ffffffffffffffffff1fffff1fffff1fff1f1fffff1fff1fff1fff1fffff1fffffffffff1fff1f1fff1f1fff1fff1fffffffffff1fffffffffffffffffffffff
+fffffffffffffffffff111ff1fffff1fff1ff111ff11111fff1fff1111fff111ffffffff1111ff11111f1111ffff1ffffffffffff1ffffffffffffffffffffff
+ffffffffffffffffffffff1f1fffff1fff1fffff1f1fff1fff1fff1fffffffff1fffffff1fffff1fff1f1f1fffff1fffffffffffff1fffffffffffffffffffff
+ffffffffffffffffff1fff1f1fffff1fff1f1fff1f1fff1fff1fff1fffff1fff1fffffff1fffff1fff1f1ff1ffff1fffffffff1fff1fffffffffffffffffffff
+fffffffffffffffffff111ff11111ff111fff111ff1fff1ff111ff11111ff111ffffffff1fffff1fff1f1fff1fff1ffffffffff111ffffffffffffffffffffff
+ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+ffffffffffffffffffffffffffffffffffffffffffff1fffffffffffffffff1fffffffffffffffff1fffffffffffffffffffffffffffffffffffffffffffffff
+ffffffffffffffffffffffffffffffffffffffffffff1fffffffffffffffff1fffffffffffffffff1fffffffffffffffffffffffffffffffffffffffffffffff
+ffffffffffffffffffffffffffffffffffffffffffff1fffffffffffffffff1fffffffffffffffff1fffffffffffffffffffffffffffffffffffffffffffffff
+ffffffffffffffffffffffffffffffffffffffffffff1fffffffffffffffff1fffffffffffffffff1fffffffffffffffffffffffffffffffffffffffffffffff
+ffffffffffffffffffffffffffffffffffffffffffff1fffffffffffffffff1fffffffffffffffff1fffffffffffffffffffffffffffffffffffffffffffffff
+ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+ffffffffffffffffffffffffffffffffffffffffffff1fffffffffffffffff1fffffffffffffffff1fffffffffffffffffffffffffffffffffffffffffffffff
+ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+ffffffffffffffffffffffffffffffffffffffffffff1fffffffffffffffff1fffffffffffffffff1fffffffffffffffffffffffffffffffffffffffffffffff
+ffffffffffffffffffffffffffffffffffffffffffff1fffffffffffffffff1fffffffffffffffff1fffffffffffffffffffffffffffffffffffffffffffffff
+ffffffffffffffffffffffffffffffffffffffffffff1fffffffffffffffff1fffffffffffffffff1fffffffffffffffffffffffffffffffffffffffffffffff
+ffffffffffffffffffffffffffffffffffffffffffff1fffffffffffffffff1fffffffffffffffff1fffffffffffffffffffffffffffffffffffffffffffffff
+ffffffffffffffffffffffffffffffffffffffffffff1fffffffffffffffff1fffffffffffffffff1fffffffffffffffffffffffffffffffffffffffffffffff
+ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+ffffffffffffffffffffffffffffffffffffffffffff1fffffffffffffffff1fffffffffffffffff1fffffffffffffffffffffffffffffffffffffffffffffff
+ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+ffffffffffffffffffffffff11111f11111f11111f11111f11111f11111f11111f11111f11111f11111f11111f11111f11111fffffffffffffffffffffffffff
+ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7
+ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+7f7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7f7
+f7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7f
+7f7f7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7f7f7
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+
 __map__
 0201010101010101010101010101010300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 0101010101010101010101010101010100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000

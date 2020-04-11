@@ -1,6 +1,9 @@
 pico-8 cartridge // http://www.pico-8.com
 version 18
 __lua__
+--slushies 3
+--by axnjaxn
+
 --common
 cartdata("axnjaxn_slushies3")
 
@@ -256,10 +259,15 @@ function bn2str(bn, ismoney)
       if (k > 0) add(y, 1) --add digits as necessary
    end
 
-   local cents = 0
+   local cents = nil
    if ismoney then
       cents = y[1]
-      if (#y > 1) cents = 10 * y[2] + cents
+      if #y > 1 then
+         cents = y[2] .. cents
+      else
+         cents = "0" .. cents
+      end
+
       if #y > 2 then
          del(y, y[1])
          del(y, y[1])
@@ -272,7 +280,7 @@ function bn2str(bn, ismoney)
    local s = ""
    for i=1,#y do s = y[i] .. s end
    if (neg) s = "-" .. s
-   if (cents > 0) s = s .. "." .. cents
+   if (ismoney and cents != "00") s = s .. "." .. cents
 
    return s
 end
@@ -864,7 +872,9 @@ print(bn2str(stats.s),45,21)
 print(stats.h,45,27)
 print(bn2str(stats.c),45,33)
 print(date2str(stats.d),45,39)
-print(bn2str(bncreate(100 * stats.p), true),45,45)
+s = tostr(stats.p)
+if (#s > 1 and sub(s, -2, -2) == ".") s = s .. "0"
+print(s,45, 45)
 
 m = {
    "run",3,57,
@@ -1216,7 +1226,7 @@ if y >= 10 and y < 13 then
    print("arnold attack", 1, 58)
    z = 200
 elseif y >= 13 then
-   register_commentary({"why does a nearly unbeatable martial artist show up so often in this game? how frustrating."}, 43)
+   register_commentary({"why does a nearly unbeatable martial artist show up in this game? how frustrating."}, 43)
    print("ryu attack", 1, 58)
    z = 2000
 end
@@ -1470,6 +1480,7 @@ elseif stats.d >= 720 then
       stats.m = bnbnsub(stats.m, bnmul(z, 500))
       stats.d = 0x7fff -- modified since this is so frequently out of range
       stats.c = bnmul(bncreate(1000), 1000)
+      savegame()
    end
    pause()
 else
